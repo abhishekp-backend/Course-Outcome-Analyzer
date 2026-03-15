@@ -48,7 +48,6 @@ const userChanges = createSlice({
           });
         }
       }
-      console.log(JSON.stringify(state.coPos))
     },
     updateSAField(state, action) {
       const { updates } = action.payload;

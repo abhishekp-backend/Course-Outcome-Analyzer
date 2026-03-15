@@ -15,11 +15,10 @@ import { useAuth } from "../../hooks/useAuth";
 export function SubjectInfo() {
   const { id } = useParams();
   const {
-    students,
     removeStudent,
-    handleUpload,
     fetchStudentsOfSubject
   } = useStudents(id);
+  const {students} = useSelector(state => state.students);
   const { getSubjectInfo, subjects, fetchAllSubject, fetchCO, loadingCO } = useSubjects();
 
   const [isChanged, setChanged] = useState(false);
@@ -27,7 +26,6 @@ export function SubjectInfo() {
   const nav = useNavigate();
 
   const { currentSubject } = useSelector(state => state.subjects);
-  console.log(currentSubject);
   const { coPos } = useSelector(state => state.userChanges);
 
   const dispatch = useDispatch();

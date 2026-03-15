@@ -70,7 +70,6 @@ const subjectSlice = createSlice({
       if (action.payload !== undefined) {
         state.currentSubject = action.payload;
       }
-      console.log(state.currentSubject)
     }
   },
   extraReducers: (builder) => {
@@ -83,7 +82,6 @@ const subjectSlice = createSlice({
       })
       .addCase(fetchCO.fulfilled, (state, action) => {
         state.loadingCO = false;
-        console.log(state.currentSubject)
         if (action.payload !== undefined) {
           state.currentSubject.co = action.payload;
         }
@@ -121,8 +119,7 @@ const subjectSlice = createSlice({
         state.error = null;
       })
       .addCase(getSubject.fulfilled, (state, action)=>{
-        console.log(action.payload)
-        state.currentSubject = action.payload
+        // state.currentSubject = action.payload
         state.loadingSubjectInfo = false
       })
       .addCase(getSubject.rejected, (state, action)=>{

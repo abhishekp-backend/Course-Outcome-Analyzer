@@ -14,6 +14,7 @@ export default function ManageClasses() {
   const { subjects } = useSelector((s) => s.subjects);
   const { academicId } = useSelector((s) => s.academicYear);
   const { classes, loading } = useSelector((s) => s.class);
+  const { branches } = useSelector((state) => state.branch);
   // const { currentYear } = useSelector((s) => s.academicYear);
 
   const [isModalOpen, setModalOpen] = useState(false);
@@ -22,7 +23,8 @@ export default function ManageClasses() {
     subjectId: "",
     division: "",
     facultyId: "",
-    semester: 0
+    semester: 0,
+    branch: "",
   });
 
   /* ===================== EFFECT ===================== */
@@ -51,7 +53,8 @@ export default function ManageClasses() {
       subjectId: "",
       division: "",
       facultyId: "",
-      semester: null
+      semester: null,
+      branch: "",
     });
   };
 
@@ -101,6 +104,19 @@ export default function ManageClasses() {
           {subjects.map((s) => (
             <option key={s._id} value={s._id}>
               {s.name}
+            </option>
+          ))}
+        </select>
+
+                <select
+          value={form.branch}
+          onChange={(e) => setForm({ ...form, branch: e.target.value })}
+          className="w-full p-2 border rounded mb-2"
+        >
+          <option value="">Select Branch</option>
+          {branches.map((b) => (
+            <option key={b._id} value={b._id}>
+              {b.branchName}
             </option>
           ))}
         </select>

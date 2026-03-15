@@ -21,7 +21,7 @@ export const fetchClasses = createAsyncThunk(
 // Create new class/section
 export const createClass = createAsyncThunk(
   "class/createClass",
-  async ({ subjectId, division, facultyId, semester }, { rejectWithValue, getState }) => {
+  async ({ subjectId, division, facultyId, semester, branch }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const res = await api.post("/api/class/createClass", {
@@ -30,8 +30,9 @@ export const createClass = createAsyncThunk(
         facultyId,
         division: division.toUpperCase(),
         semester: semester,
+        branchId: branch,
       });
-      return res.data; // { success: true }
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to create class");
     }

@@ -6,17 +6,14 @@ export const fetchStudentsBySubject = createAsyncThunk(
   "students/fetchStudents",
   async (subjectID, { rejectWithValue }) => {
     try {
-      const year = new Date().getFullYear().toString()
-      console.log(subjectID, year)
+      const year = new Date().getFullYear().toString();
       const response = await api.post(`api/students/getStudents?class=${subjectID}&year=${year}`);
-
-      if (!response.ok) {
-        const errorData = await response.json();
+      
+      if (!response.data.success) {
+        const errorData = await response.message;
         return rejectWithValue(errorData.message || "Failed to fetch students");
       }
-
-      const data = await response.json();
-      return data.data;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message || "Something went wrong");
     }
@@ -148,7 +145,7 @@ export const uploadExcel = createAsyncThunk(
         body: fd,
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      window.location.reload()
+      window.location.reload();
     } catch (error) {
       console.log(error)
       return rejectWithValue(error.message || "Something went wrong!")
@@ -195,7 +192,7 @@ const studentSlice = createSlice({
       })
       .addCase(fetchStudentsBySubject.fulfilled, (state, action) => {
         state.loading = false;
-        state.students = action.payload;
+        state.students = action.payload.data;
       })
       .addCase(fetchStudentsBySubject.rejected, (state, action) => {
         state.loading = false;

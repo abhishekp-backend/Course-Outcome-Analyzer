@@ -4,9 +4,9 @@ import { api } from "../reqURL"
 // Async thunks
 export const fetchMappings = createAsyncThunk(
   'coPoMappings/fetchMappings',
-  async (subjectId, { rejectWithValue, getState }) => {
+  async (subjectId, { rejectWithValue }) => {
     try {
-      const response = await api.get(`http://localhost:5000/api/co-po-mappings/subject/${subjectId}`);
+      const response = await api.get(`http://localhost:5000/api/cos/class/${subjectId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.message || 'Something went wrong');
@@ -97,7 +97,8 @@ const initialState = {
   mappings: [],
   poAttainment: [],
   loading: false,
-  error: null
+  error: null,
+  isFetched: false
 };
 
 const coPoMappingSlice = createSlice({
@@ -114,13 +115,16 @@ const coPoMappingSlice = createSlice({
       .addCase(fetchMappings.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.isFetched = false;
       })
       .addCase(fetchMappings.fulfilled, (state, action) => {
         state.loading = false;
+        state.isFetched = true;
         state.mappings = action.payload;
       })
       .addCase(fetchMappings.rejected, (state, action) => {
         state.loading = false;
+        state.isFetched = false;
         state.error = action.payload;
       })
       // Update mapping

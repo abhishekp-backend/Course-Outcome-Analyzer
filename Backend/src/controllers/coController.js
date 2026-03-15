@@ -307,15 +307,14 @@ exports.calculateCOAttainment = async (req, res) => {
   const marks = await StudentMarks.find({ class: classId });
   const cos = await CourseOutcome.findOne({ classId });
   const dbFields = Array.from({ length: 6 }, (_, i) => `ut1co${i + 1}`);
+  let lv1 = 0, lv2 = 0, lv3 = 0;
   const mappings = marks.map((student) => {
     const result = {};
-
+    
     for (let field of dbFields) {
       const index = Number(field.at(-1)); // assuming co1, co2, etc.
       const score = student[field];
       const thresholds = cos.cos[index-1];
-      console.log(cos.cos, index)
-
       result[field] =
         score >= thresholds.t1
           ? 3
@@ -324,10 +323,19 @@ exports.calculateCOAttainment = async (req, res) => {
             : score >= thresholds.t3
               ? 1
               : 0;
+      if (score >= thresholds.t1) {
+        lv1++;
+      }
+      else if (score >= thresholds.t2) {
+        lv2++;
+      }
+      else if (score >= thresholds.t3) {
+        lv3++;
+      }
     }
 
     return result;
   });
 
-  return res.status(200).json(mappings);
+  return res.status(200).json({mappings, lv1, lv2, lv3});
 };

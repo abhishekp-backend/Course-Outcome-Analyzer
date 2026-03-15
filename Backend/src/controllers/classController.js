@@ -71,9 +71,9 @@ exports.getAllClasses = async (req, res) => {
 
 exports.createClass = async (req, res) => {
   try {
-    const { academicYearId, classId, division, facultyId, semester, subjectId } = req.body;
+    const { academicYearId, classId, division, facultyId, semester, subjectId, branchId } = req.body;
 
-    if (!academicYearId || !subjectId || !division || !facultyId || !semester) {
+    if (!academicYearId || !subjectId || !division || !facultyId || !semester || branchId) {
       return res.status(400).json({ msg: "Invalid values!" });
     }
 
@@ -84,6 +84,7 @@ exports.createClass = async (req, res) => {
       faculty: facultyId,
       semester: semester,
       subject: subjectId,
+      branch: branchId
     });
 
     if (exists) {

@@ -18,10 +18,9 @@ export default function ManageSubjects() {
   const dispatch = useDispatch();
 
   const { subjects, loading } = useSelector((state) => state.subjects);
-  const { faculties } = useSelector((state) => state.faculty);
-  const { branches } = useSelector((state) => state.branch);
+  const { faculties, isFetched : facultiesFetched, loading: facultiesLoading } = useSelector((state) => state.faculty);
+  const { branches, loading: branchesLoading, isFetched: branchesFetched } = useSelector((state) => state.branch);
   const { academicId } = useSelector((state) => state.academicYear);
-  const { classes } = useSelector((state) => state.class)
 
   /* ===================== STATE ===================== */
 
@@ -42,15 +41,15 @@ export default function ManageSubjects() {
   useEffect(() => {
     if (academicId !== "") {
       dispatch(fetchAcademicSubjects());
-      if (branches.length === 0) {
+      if (!branchesFetched && !branchesLoading) {
         dispatch(fetchBranches({ year: "2026" }));
       }
-      if (faculties.length === 0) {
+      if (!facultiesFetched && !facultiesLoading) {
         dispatch(fetchFaculty());
       }
       dispatch(fetchClasses())
     }
-  }, [dispatch, academicId, faculties, branches]);
+  }, [dispatch, academicId, faculties]);
 
   /* ===================== VALIDATION ===================== */
 

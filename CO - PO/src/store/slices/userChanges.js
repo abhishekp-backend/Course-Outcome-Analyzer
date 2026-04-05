@@ -48,6 +48,7 @@ const userChanges = createSlice({
           });
         }
       }
+      console.log(JSON.stringify(state.coPos))
     },
     updateSAField(state, action) {
       const { updates } = action.payload;
@@ -70,6 +71,7 @@ const userChanges = createSlice({
       })
       .addCase(updateCOPO.fulfilled, (state) => {
         state.savingData = false;
+        clearCos(state)
       })
       .addCase(updateCOPO.rejected, (state) => {
         state.savingData = false;

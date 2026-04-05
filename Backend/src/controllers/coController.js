@@ -90,8 +90,9 @@ exports.updateCO = async (req, res) => {
 
       arrayFilters.push({ [`${alias}._id`]: coObjId });
     });
+    console.log(setQuery, arrayFilters)
 
-    await CourseOutcome.updateOne(
+    await CourseOutcome.updateMany(
       { classId: classObjId },
       { $set: setQuery },
       { arrayFilters, runValidators: true },

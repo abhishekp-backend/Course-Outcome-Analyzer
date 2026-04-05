@@ -15,18 +15,22 @@ const BT_LEVELS = [
 export default function COForm({ co, innerDoc }) {
   const dispatch = useDispatch();
   const [localCo, setLocalCo] = useState(co);
-  const location = useLocation()
+  const location = useLocation();
 
   const handleChange = (field, value) => {
     const updates = { [field]: value };
     try {
-      setLocalCo((prev) => ({ ...prev, [field]:value }));
-      dispatch(updateCoPosField({ classId: location.pathname.split("/").slice(-1), "cos._id": {[innerDoc.toString()]: updates} }));
+      setLocalCo((prev) => ({ ...prev, [field]: value }));
+      dispatch(
+        updateCoPosField({
+          classId: location.pathname.split("/").slice(-1),
+          "cos._id": { [innerDoc.toString()]: updates },
+        }),
+      );
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
   };
-
 
   return (
     <div className="p-4 space-y-4 border-t-0 border border-gray-100 rounded-b-xl shadow-lg ">
@@ -44,7 +48,9 @@ export default function COForm({ co, innerDoc }) {
           placeholder="Total Marks"
           className="border rounded p-2"
           value={localCo.totalMarks}
-          onChange={(e) => handleChange("totalMarks", Number(Number(e.target.value)))}
+          onChange={(e) =>
+            handleChange("totalMarks", Number(Number(e.target.value)))
+          }
         />
       </div>
 
@@ -74,21 +80,36 @@ export default function COForm({ co, innerDoc }) {
       </div>
 
       {/* BT Level Mapping */}
-      <div>
-        <p className="font-medium mb-2">BT Level Mapping</p>
-        <div className="grid grid-cols-3 gap-3">
-          <select
-            className="border rounded p-1 border-gray-300/80"
-            value={localCo.btLevel}
-            onChange={(e) => handleChange("btLevel", Number(Number(e.target.value)))}
-          >
-            <option value="" disabled>Select BT Level</option>
-            {BT_LEVELS.map((levelName, levelIndex) => (
-              <option key={levelIndex} value={levelIndex+1}>
-                {levelName}
+      <div className="flex w-full">
+        <div className="mr-auto">
+          <p className="font-medium mb-2">Topic</p>
+          <input 
+          type="text"
+          onChange={(e) => {
+            handleChange("topic", e.target.value);
+          }}
+          value={localCo.topic}
+          className="border rounded p-2 w-[18rem]"
+          placeholder="Topic" />
+        </div>
+        <div>
+          <p className="font-medium mb-2">BT Level Mapping</p>
+            <select
+              className="border rounded p-1 border-gray-300/80"
+              value={localCo.btLevel}
+              onChange={(e) =>
+                handleChange("btLevel", Number(e.target.value))
+              }
+            >
+              <option value="" disabled>
+                Select BT Level
               </option>
-            ))}
-          </select>
+              {BT_LEVELS.map((levelName, levelIndex) => (
+                <option key={levelIndex} value={levelIndex + 1}>
+                  {levelName}
+                </option>
+              ))}
+            </select>
         </div>
       </div>
     </div>

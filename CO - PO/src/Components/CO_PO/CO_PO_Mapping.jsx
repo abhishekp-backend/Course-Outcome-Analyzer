@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useCO_PO_Mapping } from '../../hooks/useCO_PO_Mapping';
 
 function CO_PO_Mapping({ subjectId }) {
-  const { loading, mappings } = useCO_PO_Mapping(subjectId);
+  const { mappings } = useCO_PO_Mapping(subjectId);
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">

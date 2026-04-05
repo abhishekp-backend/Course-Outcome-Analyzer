@@ -19,7 +19,8 @@ function Header() {
   return (
     <div className="p-3 w-screen flex h-fit shadow bg-red-500/90 text-white ">
       <p className=" text-3xl font-semibold ">
-        {!currentSubject?.name ? capitalize(location.pathname.slice(1)) : currentSubject?.name + "-" + currentSubject?.branch}
+        {console.log(location.pathname.split("/"))}
+        {location.pathname.split("/")[1] !== "subject" ? capitalize(location.pathname.slice(1)) : currentSubject?.name + "-" + currentSubject?.branch}
       </p>
       <div className="profile ml-auto flex gap-4">
         <img src="defaultPFP.png" className="w-10 m-auto" />

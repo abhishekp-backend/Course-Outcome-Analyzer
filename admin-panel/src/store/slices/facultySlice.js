@@ -19,7 +19,8 @@ export const addFaculty = createAsyncThunk(
       // simple deterministic password generator
       const state = getState()
       const password =
-        `${username}@${state.academicYear.currentYear}`;
+      `${username}@${state.academicYear.currentYear}`;
+      console.log(state.academicYear.currentYear)
       const res = await api.post("/api/auth/register", {
         username,
         email,
@@ -61,13 +62,13 @@ export const deleteFaculty = createAsyncThunk("faculty/deleteFaculty", async (id
 
 const facultySlice = createSlice({
   name: "faculty",
-  initialState: { faculties: [], loading: false, error: null },
+  initialState: { faculties: [], loading: false, isFetched: false, error: null },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchFaculty.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchFaculty.fulfilled, (state, action) => { state.faculties = action.payload; state.loading = false; })
-      .addCase(fetchFaculty.rejected, (state, action) => { state.error = action.payload; state.loading = false; })
+      .addCase(fetchFaculty.pending, (state) => { state.loading = true; state.error = null; state.isFetched = false; })
+      .addCase(fetchFaculty.fulfilled, (state, action) => { state.faculties = action.payload; state.loading = false; state.isFetched = true; })
+      .addCase(fetchFaculty.rejected, (state, action) => { state.error = action.payload; state.loading = false; state.isFetched = true; })
 
       .addCase(addFaculty.fulfilled, (state, action) => { state.list.push(action.payload); })
       .addCase(addFaculty.rejected, (state, action) => { state.error = action.payload; })

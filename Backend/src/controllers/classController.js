@@ -73,7 +73,7 @@ exports.createClass = async (req, res) => {
   try {
     const { academicYearId, classId, division, facultyId, semester, subjectId, branchId } = req.body;
 
-    if (!academicYearId || !subjectId || !division || !facultyId || !semester || branchId) {
+    if (!academicYearId || !subjectId || !division || !facultyId || !semester || !branchId) {
       return res.status(400).json({ msg: "Invalid values!" });
     }
 

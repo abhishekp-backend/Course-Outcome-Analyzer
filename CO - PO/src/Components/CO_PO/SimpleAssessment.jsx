@@ -29,10 +29,10 @@ export default function SimpleAssessment({ title, field, thresholds }) {
           />
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <span>Threshold 1</span>
+        <span>Level 1</span>
         <input
           type="number"
-          placeholder="Threshold 1"
+          placeholder="Level 1"
           className=" bg-white text-black rounded p-2"
           value={sa.t1 || ""}
           onChange = {(e) => {
@@ -40,10 +40,10 @@ export default function SimpleAssessment({ title, field, thresholds }) {
             changeSAData("t1", Number(e.target.value));
           }}
           />
-        <span>Threshold 2</span>
+        <span>Level 2</span>
         <input
           type="number"
-          placeholder="Threshold 2"
+          placeholder="Level 2"
           className=" bg-white text-black rounded p-2"
           value={sa.t2 || ""}
           onChange = {(e) => {
@@ -51,10 +51,10 @@ export default function SimpleAssessment({ title, field, thresholds }) {
             changeSAData("t2", Number(e.target.value));
           }}
           />
-        <span>Threshold 3</span>
+        <span>Level 3</span>
         <input
           type="number"
-          placeholder="Threshold 3"
+          placeholder="Level 3"
           className=" bg-white text-black rounded p-2"
           value={sa.t3 || ""}
           onChange = {(e) => {

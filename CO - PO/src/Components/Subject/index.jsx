@@ -10,7 +10,6 @@ import CO_PO_Mapping from "../CO_PO/CO_PO_Mapping";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { updateCOPO } from "../../store/slices/userChanges";
-import { useAuth } from "../../hooks/useAuth";
 
 export function SubjectInfo() {
   const { id } = useParams();
@@ -95,7 +94,7 @@ export function SubjectInfo() {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              Students
+              Marks
             </button>
             <button
               onClick={() => setActiveTab("co")}
@@ -106,6 +105,16 @@ export function SubjectInfo() {
               }`}
             >
               Course Outcomes
+            </button>
+            <button
+              onClick={() => setActiveTab("experiments")}
+              className={`py-4 px-1 border-b-3 text-sm ${
+                activeTab === "experiments"
+                  ? "border-blue-400 text-blue-600/80 font-bold"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              TW COs
             </button>
             <button
               onClick={() => setActiveTab("mapping")}

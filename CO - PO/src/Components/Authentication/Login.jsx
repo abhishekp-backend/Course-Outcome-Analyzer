@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import toast from "react-hot-toast";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -30,7 +31,12 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(formData);
+    const res = await login(formData);
+    if (!res) {
+      toast.error("Invalid credentials!");
+      return;
+    }
+    toast.success("Verified user!")
   };
 
   return (

@@ -67,7 +67,7 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await api.post('/api/auth/login', {
+      await api.post('/api/auth/login', {
         ...credentials,
         role: "FACULTY"
       });

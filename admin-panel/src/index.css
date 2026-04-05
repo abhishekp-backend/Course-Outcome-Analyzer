@@ -1,1 +1,9 @@
 @import "tailwindcss";
+input {
+    outline: 0;
+    transition: .1s ease-in-out;
+}
+
+input:focus {
+    box-shadow: 1px 1px black;
+}

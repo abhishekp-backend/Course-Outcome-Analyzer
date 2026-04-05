@@ -43,6 +43,7 @@ export const createBranch = createAsyncThunk(
 const initialState = {
   branches: [],
   loading: false,
+  isFetched: false,
   error: null
 };
 
@@ -56,13 +57,16 @@ const branchSlice = createSlice({
       .addCase(fetchBranches.pending, state => {
         state.loading = true;
         state.error = null;
+        state.isFetched = false;
       })
       .addCase(fetchBranches.fulfilled, (state, action) => {
         state.branches = action.payload.branches;
         state.loading = false;
+        state.isFetched = true;
       })
       .addCase(fetchBranches.rejected, (state, action) => {
         state.loading = false;
+        state.isFetched = true;
         state.branches = [];
         state.error = action.payload;
       })

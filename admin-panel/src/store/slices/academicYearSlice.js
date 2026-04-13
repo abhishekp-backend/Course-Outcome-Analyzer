@@ -3,8 +3,13 @@ import { api } from '../reqURL';
 
 export const fetchAcademicYears = createAsyncThunk(
   'academicYear/fetchAcademicYears',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      const currentState = getState().academicYear;
+      console.log(currentState)
+      if (currentState.fetched) {
+        return currentState.years;
+      }
       const res = await api.post('/api/academic/getYears');
       return res.data;
     } catch (err) {
@@ -40,8 +45,10 @@ export const createAcademicYear = createAsyncThunk(
 
 const initialState = {
   years: [],
+  length: 0,
   currentYear: null,
   loading: false,
+  fetched: false,
   error: null,
   academicId: ""
 };
@@ -69,6 +76,8 @@ const academicYearSlice = createSlice({
             state.academicId = action.payload.academicYears[i]._id
           }
         }
+        state.fetched = true;
+        state.length = state.years.length;
         state.loading = false;
       })
       .addCase(fetchAcademicYears.rejected, (state, action) => {

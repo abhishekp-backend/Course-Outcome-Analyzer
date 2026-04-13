@@ -6,7 +6,7 @@ export default function UTAccordion({ title, cos }) {
   const [openCO, setOpenCO] = useState(null);
 
   return (
-    <div className="rounded-lg">
+    <div className="rounded-lg bg-white shadow-xs">
 
       <div className="p-4 font-semibold text-gray-50 text-xl bg-red-400 rounded-t-lg">
         {title}

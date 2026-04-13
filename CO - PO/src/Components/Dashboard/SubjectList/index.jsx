@@ -23,7 +23,7 @@ function SubjectList({ subjects }) {
         <h3 className="text-lg p-4 font-semibold text-gray-800 mb-4">
           Your Teaching Subjects
         </h3>
-        <table className="w-full divide-y divide-gray-200 overflow-y-scroll">
+        <table className="w-full shadow-sm rounded divide-y divide-gray-200 overflow-y-scroll">
           <thead className="bg-gray-100">
             <tr>
               <th

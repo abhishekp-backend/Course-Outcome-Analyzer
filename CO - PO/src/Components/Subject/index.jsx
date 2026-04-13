@@ -10,6 +10,7 @@ import CO_PO_Mapping from "../CO_PO/CO_PO_Mapping";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { updateCOPO } from "../../store/slices/userChanges";
+import TermWorkManagement from "../CO_PO/TermWorkManagement";
 
 export function SubjectInfo() {
   const { id } = useParams();
@@ -150,6 +151,10 @@ export function SubjectInfo() {
 
           {activeTab === "co" && (
             <AssessmentSetup subjectId={id} />
+          )}
+
+          {activeTab === "experiments" && (
+            <TermWorkManagement />
           )}
 
           {activeTab === "mapping" && (

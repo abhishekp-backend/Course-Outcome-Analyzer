@@ -31,8 +31,8 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await login(formData);
-    if (!res) {
+    const res = login(formData);
+    if (!res.data.success) {
       toast.error("Invalid credentials!");
       return;
     }

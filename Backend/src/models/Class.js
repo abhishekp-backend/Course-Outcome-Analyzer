@@ -27,6 +27,10 @@ const classSchema = new mongoose.Schema(
     semester: {
       type: Number,
       required: [true, "Semester is required"]
+    },
+    twCounts: {
+      type: Number,
+      default: 0,
     }
   },
   { timestamps: true }

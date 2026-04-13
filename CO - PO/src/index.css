@@ -4,3 +4,11 @@
     user-select: none;
     outline: none;
 }
+
+body {
+    background-color: whitesmoke;
+}
+
+button {
+    cursor: pointer;
+}

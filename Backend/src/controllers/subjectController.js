@@ -1,8 +1,8 @@
 const Subject = require("../models/Subject");
 const Class = require("../models/class");
-const User = require("../models/User")
-const UserSubject = require("../models/MapUserAndSubject");
-const mongoose = require("mongoose")
+const User = require("../models/User");
+const Branch = require("../models/Branch");
+const mongoose = require("mongoose");
 
 // Get all subjects for a user
 exports.getUserSubjects = async (req, res) => {
@@ -10,8 +10,8 @@ exports.getUserSubjects = async (req, res) => {
     const subjects = await Class.aggregate([
       {
         $match: {
-          faculty: new mongoose.Types.ObjectId(req.user.id)
-        }
+          faculty: new mongoose.Types.ObjectId(req.user.id),
+        },
       },
       {
         $lookup: {
@@ -19,28 +19,28 @@ exports.getUserSubjects = async (req, res) => {
           localField: "subject",
           foreignField: "_id",
           as: "subject",
-        }
+        },
       },
-      {$unwind: "$subject"},
+      { $unwind: "$subject" },
       {
         $lookup: {
           from: "branches",
           localField: "subject.branch",
           foreignField: "_id",
           as: "branch",
-        }
+        },
       },
-      {$unwind: "$branch"},
+      { $unwind: "$branch" },
       {
         $project: {
           _id: 1,
           division: 1,
           semester: "$subject.semester",
           name: "$subject.name",
-          branch: "$branch.branchName"
-        }
-      }
-    ])
+          branch: "$branch.branchName",
+        },
+      },
+    ]);
 
     res.status(200).json({
       success: true,
@@ -64,7 +64,7 @@ exports.createSubject = async (req, res) => {
 
     const subject = await Subject.create({
       name,
-      branch : new mongoose.Types.ObjectId(branch),
+      branch: new mongoose.Types.ObjectId(branch),
       semester,
       academicYear: new mongoose.Types.ObjectId(year),
     });
@@ -97,15 +97,15 @@ exports.updateSubject = async (req, res) => {
 
     if (facultyId) {
       hasChanges = true;
-      updates.user = new mongoose.Types.ObjectId(facultyId)
+      updates.user = new mongoose.Types.ObjectId(facultyId);
     }
     if (branch) {
       hasChanges = true;
-      updates.branch = new mongoose.Types.ObjectId(branch)
+      updates.branch = new mongoose.Types.ObjectId(branch);
     }
     if (semester) {
       hasChanges = true;
-      updates.branch = semester
+      updates.branch = semester;
     }
     if (name) {
       hasChanges = true;
@@ -119,7 +119,7 @@ exports.updateSubject = async (req, res) => {
         new: true,
         runValidators: true,
         context: "query",
-      }
+      },
     );
 
     if (!subject) {
@@ -143,7 +143,6 @@ exports.updateSubject = async (req, res) => {
     });
   }
 };
-
 
 // Delete a subject
 exports.deleteSubject = async (req, res) => {
@@ -178,7 +177,7 @@ exports.deleteSubject = async (req, res) => {
 exports.getSubject = async (req, res) => {
   const { id } = req.params;
 
-  const division = await Class.findById(id);
+  const division = await Class.exists({ _id: id });
   if (!division) {
     return res.status(400).json({
       message: "Subject not found",
@@ -186,67 +185,104 @@ exports.getSubject = async (req, res) => {
     });
   }
 
-  const subject = await Subject.findById(division.subject)
-  const info = {
-    name: subject.name,
-    semester: subject.semester,
-    year: subject.year,
-    branch: subject.branch,
-  };
+  const subjectInfo = await Class.aggregate([
+    {
+      $match: {
+        id: new mongoose.Types.ObjectId(id),
+      },
+    },
+    {
+      $lookup: {
+        from: "subjects",
+        localField: "subject",
+        foreignField: "_id",
+        as: "subject",
+      },
+    },
+    { $unwind: "$subject" },
+
+    {
+      $lookup: {
+        from: "branches",
+        localField: "branch",
+        foreignField: "_id",
+        as: "branch",
+      },
+    },
+    {$unwind: "$branch"},
+
+    {
+      $lookup: {
+        from:"classes",
+        localField: "_id",
+        foreignField: "subject",
+        as: "$class"
+      }
+    },
+    {$unwind: "$class"},
+
+    {
+      $project: {
+        _id: 1,
+        division: "$class.division",
+        semester: "$subject.name",
+        name: 1,
+        branch: "$branch.branchName",
+
+      }
+    }
+  ]);
 
   return res.status(200).json({
-    message:"Subject found",
-    info: info,
-    status: true
-  })
+    message: "Subject found",
+    info: subjectInfo,
+    status: true,
+  });
 
   // await Subject.findByIdAndDelete()
 };
 
-exports.getAllSubjects = async(req, res) => {
+exports.getAllSubjects = async (req, res) => {
   try {
-    const {year} = req.params;
-    const subject = await Subject.findBy({year: year})
-    
+    const { year } = req.params;
+    const subject = await Subject.findBy({ year: year });
+
     if (!subjet) {
-      return res.status(200).json({})
+      return res.status(200).json({});
     }
-    
+
     const result = {
       name: subject.name,
       branch: subject.branch,
       semester: subject.semester,
-      year: subject.year
-    }
-    
-    const faculty = await User.find({fID: subject.user})
+      year: subject.year,
+    };
+
+    const faculty = await User.find({ fID: subject.user });
     if (!faculty) {
-      result[faculty] = "None"
+      result[faculty] = "None";
+    } else {
+      result[faculty] = faculty.username;
     }
-    else {
-      result[faculty] = faculty.username
-    }
-    
-    return res.status(200).json(res)
+
+    return res.status(200).json(res);
+  } catch (err) {
+    return res.status(500).json(err);
   }
-  catch (err) {
-    return res.status(500).json(err)
-  }
-}
+};
 
 exports.getAcademicSubjects = async (req, res) => {
   try {
     const pipeline = [
       {
         $match: {
-          academicYear: new mongoose.Types.ObjectId(req.params.academicYearId)
-        }
-      }
+          academicYear: new mongoose.Types.ObjectId(req.params.academicYearId),
+        },
+      },
     ];
 
     if (req.params.branch) {
-      pipeline[0].$match.branch =
-        new mongoose.Types.ObjectId(req.query.branch);
+      pipeline[0].$match.branch = new mongoose.Types.ObjectId(req.query.branch);
     }
 
     pipeline.push(
@@ -255,8 +291,8 @@ exports.getAcademicSubjects = async (req, res) => {
           from: "academicyears", // must match Mongo collection name
           localField: "academicYear",
           foreignField: "_id",
-          as: "academicYear"
-        }
+          as: "academicYear",
+        },
       },
       { $unwind: "$academicYear" },
       {
@@ -264,8 +300,8 @@ exports.getAcademicSubjects = async (req, res) => {
           from: "branches",
           localField: "branch",
           foreignField: "_id",
-          as: "branch"
-        }
+          as: "branch",
+        },
       },
       { $unwind: "$branch" },
       {
@@ -277,8 +313,8 @@ exports.getAcademicSubjects = async (req, res) => {
           branchName: "$branch.branchName",
           faculty: "$faculty.username",
           division: "$division.division",
-        }
-      }
+        },
+      },
     );
 
     const subjects = await Subject.aggregate(pipeline);

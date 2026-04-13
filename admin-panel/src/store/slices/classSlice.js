@@ -47,6 +47,7 @@ const initialState = {
     fetch: false,
     create: false
   },
+  length: 0,
   error: {
     fetch: null,
     create: null
@@ -71,6 +72,7 @@ const classSlice = createSlice({
       .addCase(fetchClasses.fulfilled, (state, action) => {
         state.loading.fetch = false;
         state.classes = action.payload.data;
+        state.length = action.payload.data.length;
       })
       .addCase(fetchClasses.rejected, (state, action) => {
         state.loading.fetch = false;

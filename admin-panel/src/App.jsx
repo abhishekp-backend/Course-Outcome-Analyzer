@@ -27,16 +27,6 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
-  const dispatch = useDispatch()
-  const {academicId} = useSelector((state) => state.academicYear)
-  useEffect(() => {
-    dispatch(fetchAcademicYears())
-    if (academicId !== "") {
-      dispatch(fetchAcademicSubjects())
-    }
-    dispatch(fetchFaculty())
-    dispatch(fetchBranches({}))
-  }, [])
   return (
     <BrowserRouter>
       <Routes>

@@ -11,7 +11,7 @@ export default function SimpleAssessment({ title, field, thresholds }) {
   }
   
   return (
-    <div className="border rounded-lg p-4 space-y-4 text-white bg-red-500/90">
+    <div className="border rounded-lg shadow-xs p-4 space-y-4 text-white bg-red-500/90">
       <div className="font-semibold text-xl text-gray-50">
         {title}
       </div>

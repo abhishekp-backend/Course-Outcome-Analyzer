@@ -5,13 +5,17 @@ import { api } from '../reqURL';
 
 export const fetchBranches = createAsyncThunk(
   'branch/fetchBranches',
-  async ({ filter }, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const res = await api.post('/api/branch/getBranches', { filter });
+      const state = getState().branch;
+      if (state.fetched) {
+        return state.branches;
+      }
+      const res = await api.post('/api/branch/getBranches');
       return res.data;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || 'Failed to fetch branches'
+        err?.response?.data || 'Failed to fetch branches'
       );
     }
   }
@@ -44,7 +48,8 @@ const initialState = {
   branches: [],
   loading: false,
   isFetched: false,
-  error: null
+  error: null,
+  length: 0,
 };
 
 const branchSlice = createSlice({
@@ -55,16 +60,18 @@ const branchSlice = createSlice({
     builder
       /* ---------- FETCH ---------- */
       .addCase(fetchBranches.pending, state => {
-        state.loading = true;
         state.error = null;
         state.isFetched = false;
+        state.loading = true;
       })
       .addCase(fetchBranches.fulfilled, (state, action) => {
         state.branches = action.payload.branches;
         state.loading = false;
         state.isFetched = true;
+        state.length = state.branches.length;
       })
       .addCase(fetchBranches.rejected, (state, action) => {
+        console.log(action)
         state.loading = false;
         state.isFetched = true;
         state.branches = [];

@@ -45,7 +45,7 @@ export default function ManageClasses() {
 
   const handleSubmit = () => {
     if (!isFormValid) return;
-
+    console.log("Creating")
     dispatch(createClass(form));
     setModalOpen(false);
     setForm({
@@ -56,6 +56,7 @@ export default function ManageClasses() {
       semester: null,
       branch: "",
     });
+    console.log("Created")
   };
 
   /* ===================== TABLE ===================== */

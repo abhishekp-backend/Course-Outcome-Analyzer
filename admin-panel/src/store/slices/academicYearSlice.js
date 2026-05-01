@@ -6,7 +6,6 @@ export const fetchAcademicYears = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const currentState = getState().academicYear;
-      console.log(currentState)
       if (currentState.fetched) {
         return currentState.years;
       }
@@ -67,8 +66,9 @@ const academicYearSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchAcademicYears.fulfilled, (state, action) => {
-        state.years = action.payload.academicYears;
-        const currentYear = new Date().getFullYear().toString()
+        state.fetched = true;
+        state.years = action.payload.academicYears || state.years;
+        const currentYear = new Date().getFullYear().toString();
         for (let i in action.payload.academicYears) {
           let year = action.payload.academicYears[i].year
           if (year === currentYear) {
@@ -76,8 +76,7 @@ const academicYearSlice = createSlice({
             state.academicId = action.payload.academicYears[i]._id
           }
         }
-        state.fetched = true;
-        state.length = state.years.length;
+        state.length = state.years?.length || 0;
         state.loading = false;
       })
       .addCase(fetchAcademicYears.rejected, (state, action) => {

@@ -20,7 +20,6 @@ export default function Sidebar({ active }) {
     { name: "Branches", path: "/dashboard/branches" },
     { name: "Sections", path: "/dashboard/classes" },
   ];
-  const [fetchedAll, setFetchedAll] = useState(false);
 
   useEffect(() => {
     dispatch(fetchAcademicYears());
@@ -30,7 +29,6 @@ export default function Sidebar({ active }) {
     if (academicId !== "") {
       dispatch(fetchAcademicSubjects());
     }
-    console.log(academicId !== "", academicId.length)
   }, [dispatch, academicId]);
 
   return (

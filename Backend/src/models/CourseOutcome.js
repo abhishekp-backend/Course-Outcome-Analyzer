@@ -1,5 +1,18 @@
 const mongoose = require("mongoose")
 
+const schemaFields = {};
+
+for (let i = 1; i <= 10; i++) {
+  for (let j = 1; j <= 3; j++) {
+    schemaFields[`tw${i}co${j}`] = {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0
+    };
+  }
+}
+
 const CourseOutcomeSchema = new mongoose.Schema(
   {
     classId: {
@@ -34,13 +47,17 @@ const CourseOutcomeSchema = new mongoose.Schema(
       ],
     },
 
-    // ===== Assessments (pure JSON objects) =====
-    internalAssessment: {
-      type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1:0,t2:0,t3:0 }),
+    // Term Work
+    tw: schemaFields,
+    tws: {
+      type: Number,
+      min: 0,
+      max: 10,
+      default: 0
     },
 
-    termWork: {
+    // ===== Assessments (pure JSON objects) =====
+    internalAssessment: {
       type: mongoose.Schema.Types.Mixed,
       default: () => ({ totalMarks: 0, t1:0,t2:0,t3:0 }),
     },

@@ -58,8 +58,9 @@ const createAuthenticatedRequest = async (url, options = {}) => {
   if (response.status === 401) {
     clearAuthData();
   }
+  const json = await response.json()
   
-  return response;
+  return {response, json};
 };
 
 // Async thunks for API calls
@@ -67,45 +68,12 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      await api.post('/api/auth/login', {
+      const res = await api.post('/api/auth/login', {
         ...credentials,
         role: "FACULTY"
       });
 
-      return true;
-    } catch (error) {
-      return rejectWithValue(error.message || 'Network error');
-    }
-  }
-);
-
-export const registerUser = createAsyncThunk(
-  'auth/register',
-  async (userData, { rejectWithValue }) => {
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle validation errors from backend
-        if (data.errors && Array.isArray(data.errors)) {
-          const errorMessages = data.errors.map(err => err.message).join(', ');
-          return rejectWithValue(errorMessages || data.message || 'Registration failed');
-        }
-        return rejectWithValue(data.message || 'Registration failed');
-      }
-
-      // Store JWT token and user data
-      setAuthData(data.token, data.user);
-
-      return data;
+      return res.data;
     } catch (error) {
       return rejectWithValue(error.message || 'Network error');
     }
@@ -122,16 +90,20 @@ export const logoutUser = createAsyncThunk(
 
 export const checkAuthStatus = createAsyncThunk(
   'auth/checkStatus',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
       // Verify JWT token with backend
-      const response = await createAuthenticatedRequest('/api/auth/profile');
+      const state = getState();
+      if (state.auth.isAuthenticated) {
+        return true;
+      }
+      const {response, json} = await createAuthenticatedRequest('/api/auth/profile');
 
       if (!response.ok) {
         return rejectWithValue('Invalid token');
       }
 
-      return true;
+      return json.user;
     } catch {
       clearAuthData();
       return rejectWithValue('Authentication check failed');
@@ -200,29 +172,10 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.user = action.payload;
         state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
-
-    // Register
-    builder
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.error = null;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

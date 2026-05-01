@@ -6,11 +6,16 @@ import { api } from "../reqURL";
 // Fetch all classes/sections
 export const fetchClasses = createAsyncThunk(
   "class/fetchClasses",
-  async (filter, { rejectWithValue }) => {
+  async (filter, { rejectWithValue, getState }) => {
     try {
+      const state = getState().class;
+      if (state.fetched) {
+        return state.classes;
+      }
       const res = await api.post("/api/class/fetchClasses", {
         ...filter
       });
+      console.log(res)
       return res.data; // array of class objects
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to fetch classes");
@@ -43,15 +48,9 @@ export const createClass = createAsyncThunk(
 
 const initialState = {
   classes: [],
-  loading: {
-    fetch: false,
-    create: false
-  },
+  loading: true,
+  fetched: true,
   length: 0,
-  error: {
-    fetch: null,
-    create: null
-  }
 };
 
 /* ===================== SLICE ===================== */
@@ -66,33 +65,35 @@ const classSlice = createSlice({
     builder
       /* ---------- FETCH ---------- */
       .addCase(fetchClasses.pending, (state) => {
-        state.loading.fetch = true;
-        state.error.fetch = null;
+        state.loading = true;
+        state.fetched = false;
       })
       .addCase(fetchClasses.fulfilled, (state, action) => {
-        state.loading.fetch = false;
-        state.classes = action.payload.data;
-        state.length = action.payload.data.length;
+        state.fetched = true;
+        state.loading = false;
+        state.classes = action.payload?.data;
+        state.length = state.classes?.length || 0;
       })
       .addCase(fetchClasses.rejected, (state, action) => {
-        state.loading.fetch = false;
+        state.fetched = false;
+        state.loading = false;
         state.classes = [];
-        state.error.fetch = action.payload;
+        state.error = action.payload;
       })
 
       /* ---------- CREATE ---------- */
       .addCase(createClass.pending, (state) => {
-        state.loading.fetch = true;
-        state.loading.create = true;
-        state.error.create = true;
+        state.loading = true;
+        state.fetched = false; 
       })
       .addCase(createClass.fulfilled, (state, action) => {
-        state.loading.create = false;
-        state.loading.fetch = false;
+        state.fetched = true;
+        state.loading = false;
         state.classes.push(action.payload.data);
       })
       .addCase(createClass.rejected, (state, action) => {
-        state.loading.create = false;
+        state.fetched = false;
+        state.loading = false;
         state.error.create = action.payload;
       });
   }

@@ -11,10 +11,6 @@ import ManageBranches from "./Components/Dashboard/ManageBranches";
 import ManageAcademicYears from "./Components/Dashboard/ManageAcademicYears";
 import ManageClasses from "./Components/Dashboard/ManageClasses";
 import { checkAuth } from "./store/slices/authSlice";
-import { fetchFaculty } from "./store/slices/facultySlice"
-import { fetchAcademicSubjects } from "./store/slices/subjectsSlice"
-import { fetchBranches } from "./store/slices/branchSlice"
-import { fetchAcademicYears } from "./store/slices/academicYearSlice"
 import { useDispatch } from "react-redux"
 
 function ProtectedRoute({ children }) {

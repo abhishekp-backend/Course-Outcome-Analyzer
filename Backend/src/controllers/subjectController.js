@@ -175,71 +175,65 @@ exports.deleteSubject = async (req, res) => {
 };
 
 exports.getSubject = async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const division = await Class.exists({ _id: id });
-  if (!division) {
-    return res.status(400).json({
-      message: "Subject not found",
-      status: false,
+    const classExists = await Class.exists({ _id: id });
+    if (!classExists) {
+      return res.status(400).json({
+        message: "Class not found",
+        status: false,
+      });
+    }
+
+    const subjectInfo = await Class.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "subjects",
+          localField: "subject",
+          foreignField: "_id",
+          as: "subject",
+        },
+      },
+      { $unwind: { path: "$subject", preserveNullAndEmptyArrays: true } },
+
+      {
+        $lookup: {
+          from: "branches",
+          localField: "branch",
+          foreignField: "_id",
+          as: "branch",
+        },
+      },
+      { $unwind: { path: "$branch", preserveNullAndEmptyArrays: true } },
+
+      {
+        $project: {
+          _id: 1,
+          division: 1,
+          subjectName: "$subject.name",
+          name: 1,
+          branch: "$branch.branchName",
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      message: "Subject found",
+      info: subjectInfo,
+      status: true,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      msg: "Internal Server Error!",
     });
   }
-
-  const subjectInfo = await Class.aggregate([
-    {
-      $match: {
-        id: new mongoose.Types.ObjectId(id),
-      },
-    },
-    {
-      $lookup: {
-        from: "subjects",
-        localField: "subject",
-        foreignField: "_id",
-        as: "subject",
-      },
-    },
-    { $unwind: "$subject" },
-
-    {
-      $lookup: {
-        from: "branches",
-        localField: "branch",
-        foreignField: "_id",
-        as: "branch",
-      },
-    },
-    {$unwind: "$branch"},
-
-    {
-      $lookup: {
-        from:"classes",
-        localField: "_id",
-        foreignField: "subject",
-        as: "$class"
-      }
-    },
-    {$unwind: "$class"},
-
-    {
-      $project: {
-        _id: 1,
-        division: "$class.division",
-        semester: "$subject.name",
-        name: 1,
-        branch: "$branch.branchName",
-
-      }
-    }
-  ]);
-
-  return res.status(200).json({
-    message: "Subject found",
-    info: subjectInfo,
-    status: true,
-  });
-
-  // await Subject.findByIdAndDelete()
 };
 
 exports.getAllSubjects = async (req, res) => {

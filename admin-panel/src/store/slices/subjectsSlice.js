@@ -7,6 +7,9 @@ export const fetchAcademicSubjects = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const state = getState();
+      if (state.subjects.fetched) {
+        return state.subjects.subjects;
+      }
       const res = await api.get(
         `/api/subjects/academic-year/${state.academicYear.academicId}`,
       );
@@ -72,16 +75,19 @@ const subjectsSlice = createSlice({
     builder
       .addCase(fetchAcademicSubjects.pending, (state) => {
         state.loading = true;
+        state.fetched = false;
         state.error = null;
       })
       .addCase(fetchAcademicSubjects.fulfilled, (state, action) => {
         state.subjects = action.payload.subjects;
         state.loading = false;
+        state.fetched = true;
         state.length = state.subjects.length;
       })
       .addCase(fetchAcademicSubjects.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
+        state.fetched = true;
       })
 
       .addCase(addSubject.fulfilled, (state, action) => {

@@ -4,27 +4,41 @@ import { useSelector } from "react-redux";
 
 function Header() {
   const { currentSubject } = useSelector((state) => state.subjects);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { user } = useSelector((state) => state.auth);
+
   function capitalize(text) {
     if (text) {
       return text[0].toUpperCase() + text.slice(1);
-    } else {
-      return;
     }
   }
+
   const location = useLocation();
-  console.log(currentSubject)
+
+  const title =
+    location.pathname.split("/")[1] !== "subject"
+      ? capitalize(location.pathname.slice(1))
+      : `${currentSubject?.name}-${currentSubject?.branch}`;
 
   return (
-    <div className="p-3 w-screen flex h-fit shadow bg-red-500/90 text-white ">
-      <p className=" text-3xl font-semibold ">
-        {location.pathname.split("/")[1] !== "subject"
-          ? capitalize(location.pathname.slice(1))
-          : currentSubject?.name + "-" + currentSubject?.branch}
+    <div className="w-full px-6 py-4 flex items-center 
+                    bg-white text-red-600 
+                    shadow-sm border-b border-gray-100">
+
+      {/* Title */}
+      <p className="text-2xl font-semibold tracking-tight">
+        {title}
       </p>
-      <div className="profile ml-auto flex gap-4">
-        <img src="defaultPFP.png" className="w-10 m-auto" />
-        <h1 className="text-2xl m-auto">{user?.name}</h1>
+
+      {/* Profile */}
+      <div className="ml-auto flex items-center gap-3">
+        <img
+          src="defaultPFP.png"
+          alt="profile"
+          className="w-9 h-9 rounded-full object-cover border border-gray-200"
+        />
+        <h1 className="text-base font-medium text-red-500">
+          {user?.name}
+        </h1>
       </div>
     </div>
   );

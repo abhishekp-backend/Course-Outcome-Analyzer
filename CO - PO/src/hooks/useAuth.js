@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { 
-  loginUser, 
-  registerUser, 
+  loginUser,  
   logoutUser, 
   checkAuthStatus,
   clearError 
@@ -15,10 +14,6 @@ export const useAuth = () => {
 
   const login = (credentials) => {
     return dispatch(loginUser(credentials));
-  };
-
-  const register = (userData) => {
-    return dispatch(registerUser(userData));
   };
 
   const logout = () => {
@@ -42,7 +37,6 @@ export const useAuth = () => {
     loading,
     error,
     login,
-    register,
     logout,
     checkAuth,
     clearAuthError,

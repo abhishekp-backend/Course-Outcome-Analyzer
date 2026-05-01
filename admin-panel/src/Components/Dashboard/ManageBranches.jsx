@@ -14,9 +14,6 @@ export default function ManageBranches() {
   const { branches, loading } = useSelector(
     (state) => state.branch
   );
-  const { faculties } = useSelector(
-    (state) => state.faculty
-  )
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({

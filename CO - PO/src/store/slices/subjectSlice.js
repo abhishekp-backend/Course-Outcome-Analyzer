@@ -1,39 +1,42 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import {api} from "../reqURL"
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { api } from "../reqURL";
 
 // Subject API Calls
 export const fetchSubjects = createAsyncThunk(
-  'subjects/fetchSubjects',
-  async (_, { rejectWithValue }) => {
+  "subjects/fetchSubjects",
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const response = await api.get('/api/subjects');
+      const state = getState().subjects;
+      if (state.isSubjectFetched) {
+        return { data: state.subjects };
+      }
+      const response = await api.get("/api/subjects");
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');
+      return rejectWithValue(error.message || "Something went wrong");
     }
-  }
+  },
 );
 
 export const getSubject = createAsyncThunk(
-  'subjects/getSubject',
-  async(id, { rejectWithValue, getState })=>{
+  "subjects/getSubject",
+  async (id, { rejectWithValue, getState }) => {
     try {
-      const { isAuthenticated } = getState()
+      const { isAuthenticated } = getState();
       if (isAuthenticated) {
         return;
       }
       const response = await api.get(`/api/subjects/subjectInfo/${id}`);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');
+      return rejectWithValue(error.message || "Something went wrong");
     }
-
-  }
-)
+  },
+);
 
 // Course Outcome API Calls
 export const fetchCO = createAsyncThunk(
-  'cos/fetchCO',
+  "cos/fetchCO",
   async (subjectId, { getState, rejectWithValue }) => {
     try {
       const { isAuthenticating } = getState().auth;
@@ -44,13 +47,13 @@ export const fetchCO = createAsyncThunk(
       const response = await api.get(`api/cos/subject/${subjectId}`);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.message || 'Something went wrong');
+      return rejectWithValue(error.message || "Something went wrong");
     }
-  }
+  },
 );
 
 const subjectSlice = createSlice({
-  name: 'subjects',
+  name: "subjects",
   initialState: {
     subjects: [],
     loading: false,
@@ -60,7 +63,7 @@ const subjectSlice = createSlice({
     isCOFetched: false,
     loadingCO: false,
     errorCO: null,
-    currentSubject: {name:"", semester:"", branch: "", co: null, id: null},
+    currentSubject: { name: "", semester: "", branch: "", co: null, id: null },
   },
   reducers: {
     clearSubjectError: (state) => {
@@ -70,7 +73,7 @@ const subjectSlice = createSlice({
       if (action.payload !== undefined) {
         state.currentSubject = action.payload;
       }
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -110,23 +113,23 @@ const subjectSlice = createSlice({
         state.loading = false;
         state.isSubjectFetched = true;
         state.isSubjectFetching = false;
-        state.error = action.payload || 'Failed to fetch subjects';
+        state.error = action.payload || "Failed to fetch subjects";
       })
 
       // Get subjects
-      .addCase(getSubject.pending, (state)=>{
+      .addCase(getSubject.pending, (state) => {
         state.loadingSubjectInfo = true;
         state.error = null;
       })
-      .addCase(getSubject.fulfilled, (state, action)=>{
+      .addCase(getSubject.fulfilled, (state, action) => {
         // state.currentSubject = action.payload
-        state.loadingSubjectInfo = false
+        state.loadingSubjectInfo = false;
       })
-      .addCase(getSubject.rejected, (state, action)=>{
-        state.loadingSubjectInfo = false
-        state.error = action.payload || "Failed to fetch subject's info."
-      })
-  }
+      .addCase(getSubject.rejected, (state, action) => {
+        state.loadingSubjectInfo = false;
+        state.error = action.payload || "Failed to fetch subject's info.";
+      });
+  },
 });
 
 export const { clearSubjectError, setCurrentSubject } = subjectSlice.actions;

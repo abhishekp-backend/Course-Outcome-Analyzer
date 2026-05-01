@@ -3,7 +3,7 @@ import { updateSAField } from "../../store/slices/userChanges";
 import { useDispatch } from "react-redux";
 
 export default function SimpleAssessment({ title, field, thresholds }) {
-  const [sa, setSA] = useState({totalMarks: thresholds.totalMarks, t1: thresholds.t1, t2: thresholds.t2, t3: thresholds.t3});
+  const [sa, setSA] = useState({totalMarks: thresholds?.totalMarks || 0, t1: thresholds?.t1 || 0, t2: thresholds?.t2 || 0, t3: thresholds?.t3 || 0});
   const dispatch = useDispatch();
 
   const changeSAData = (subField, value) => {

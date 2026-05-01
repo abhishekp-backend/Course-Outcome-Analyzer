@@ -147,7 +147,7 @@ export default function ManageStudents() {
         <select name="class" value={id} onChange={(e)=>setId(e.target.value)} className = "border rounded p-1 m-auto ml-2 outline-none">
           <option value="" disabled>Select Class</option>
           {
-            classes.map(e => {
+            classes?.map(e => {
               return <option value={JSON.stringify({"branch":e.branch, "division": e.division, classId: e._id})}>{e.branch}-{e.subject}-{e.division}</option>
             })
           }

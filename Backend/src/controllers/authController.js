@@ -104,6 +104,7 @@ const login = asyncHandler(async (req, res) => {
       maxAge: 60*60*1000
     })
     return res.json({
+      name: user.username,
       success: true
     });
   }

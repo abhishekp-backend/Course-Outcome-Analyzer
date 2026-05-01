@@ -14,7 +14,7 @@ export default function UTAccordion({ title, cos }) {
 
       <div className="p-3 space-y-2 border-x border-gray-400 border-b rounded-b-xl">
 
-        {cos.map((co, index) => {
+        {cos?.map((co, index) => {
 
           const label = co.name || `CO${index + 1}`;
 

@@ -9,7 +9,7 @@ const initialState = {
   coPos: {
     cos: [],
   },
-  assess: null,
+  assess: {},
   // {subjectId, arrayDocId, values}
 };
 
@@ -18,7 +18,8 @@ export const updateCOPO = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const { userChanges } = getState();
-      const response = await api.post("/api/cos/updateCO", userChanges.coPos);
+      console.log(userChanges)
+      const response = await api.post("/api/cos/updateCO", {cos: userChanges.coPos.cos, assess: userChanges.assess, classId: userChanges.classId});
       return response.data;
     } catch (error) {
       return rejectWithValue(error.message || "Something went wrong!");
@@ -48,16 +49,32 @@ const userChanges = createSlice({
           });
         }
       }
-      console.log(JSON.stringify(state.coPos))
+      state.classId = action.payload.classId[0];
+      console.log(JSON.stringify(state.coPos));
     },
     updateSAField(state, action) {
-      const { updates } = action.payload;
+      const { updates, classId } = action.payload;
+      state.classId = classId;
       state.assess[Object.keys(updates)[0]] = Object.values(updates)[0];
     },
 
     removeCoPos(state, action) {
       const docId = action.payload;
       state.coPos = state.coPos.filter((c) => c._id !== docId);
+    },
+
+    updateTWField(state, action) {
+      const { updates, classId } = action.payload;
+
+      // 🔥 attach classId for backend
+      state.classId = classId;
+
+      if (!state.assess) state.assess = {};
+      if (!state.assess.tw) state.assess.tw = {};
+
+      for (const key in updates) {
+        state.assess.tw[key] = updates[key];
+      }
     },
 
     clearCos(state) {
@@ -71,7 +88,7 @@ const userChanges = createSlice({
       })
       .addCase(updateCOPO.fulfilled, (state) => {
         state.savingData = false;
-        clearCos(state)
+        clearCos(state);
       })
       .addCase(updateCOPO.rejected, (state) => {
         state.savingData = false;
@@ -85,5 +102,6 @@ export const {
   removeCoPos,
   clearCos,
   updateSAField,
+  updateTWField
 } = userChanges.actions;
 export default userChanges.reducer;

@@ -4,8 +4,12 @@ import { api } from "../reqURL"
 // Async thunks
 export const fetchMappings = createAsyncThunk(
   'coPoMappings/fetchMappings',
-  async (subjectId, { rejectWithValue }) => {
+  async (subjectId, { rejectWithValue, getState }) => {
     try {
+      const state = getState().coPoMappings;
+      if (state.isFetched) {
+        return state.mappings;
+      }
       const response = await api.get(`http://localhost:5000/api/cos/class/${subjectId}`);
       return response.data;
     } catch (error) {

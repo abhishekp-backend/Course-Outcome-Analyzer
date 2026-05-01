@@ -102,7 +102,6 @@ export const checkAuthStatus = createAsyncThunk(
       if (!response.ok) {
         return rejectWithValue('Invalid token');
       }
-
       return json.user;
     } catch {
       clearAuthData();

@@ -6,38 +6,59 @@ export default function UTAccordion({ title, cos }) {
   const [openCO, setOpenCO] = useState(null);
 
   return (
-    <div className="rounded-lg bg-white shadow-xs">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
 
-      <div className="p-4 font-semibold text-gray-50 text-xl bg-red-400 rounded-t-lg">
-        {title}
+      {/* 🔥 Header (subtle red accent, not full red block) */}
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+        <div className="w-1.5 h-5 bg-red-500 rounded" />
+        <h2 className="text-lg font-semibold text-gray-800">
+          {title}
+        </h2>
       </div>
 
-      <div className="p-3 space-y-2 border-x border-gray-400 border-b rounded-b-xl">
+      {/* 🔥 Accordion body */}
+      <div className="p-3 space-y-2">
 
         {cos?.map((co, index) => {
-
+          const isOpen = openCO === co._id;
           const label = co.name || `CO${index + 1}`;
 
           return (
-            <div key={co._id || index}>
+            <div key={co._id || index} className="space-y-2">
+
+              {/* Accordion button */}
               <button
-                onClick={() => setOpenCO(openCO === co._id ? null : co._id)}
-                className={`w-full text-left ${openCO === co._id ? "bg-gray-300 text-gray-700" : "bg-gray-100 text-gray-400"} p-3 rounded flex items-center`}
+                onClick={() =>
+                  setOpenCO(isOpen ? null : co._id)
+                }
+                className={`
+                  w-full flex items-center justify-between
+                  px-4 py-3 rounded-lg text-sm font-medium
+                  border transition
+                  ${isOpen
+                    ? "bg-red-50 border-red-200 text-gray-800"
+                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                  }
+                `}
               >
-                {label}
+                <span>{label}</span>
 
                 <MdArrowDropDown
-                  className={`ml-auto transition ${
-                    openCO === co._id ? "rotate-180" : ""
+                  className={`text-xl transition-transform duration-200 ${
+                    isOpen ? "rotate-180 text-red-500" : "text-gray-400"
                   }`}
                 />
               </button>
-              {openCO === co._id && (
-                <COForm
-                  index={index}
-                  innerDoc={co._id}
-                  co={co}   // REAL data from slice
-                />
+
+              {/* Accordion content */}
+              {isOpen && (
+                <div className="pl-2">
+                  <COForm
+                    index={index}
+                    innerDoc={co._id}
+                    co={co}
+                  />
+                </div>
               )}
             </div>
           );

@@ -1,16 +1,15 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { 
-  loginUser,  
-  logoutUser, 
+import { useSelector, useDispatch } from "react-redux";
+import {
+  loginUser,
+  logoutUser,
   checkAuthStatus,
-  clearError 
-} from '../store/slices/authSlice';
+  clearError,
+} from "../store/slices/authSlice";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
-  const { user, token, isAuthenticated, loading, error, isAuthenticating } = useSelector(
-    (state) => state.auth
-  );
+  const { user, token, isAuthenticated, loading, error, isAuthenticating } =
+    useSelector((state) => state.auth);
 
   const login = (credentials) => {
     return dispatch(loginUser(credentials));
@@ -20,9 +19,15 @@ export const useAuth = () => {
     return dispatch(logoutUser());
   };
 
-  const checkAuth = () => {
-    if (!isAuthenticated && !isAuthenticating) {
-      return dispatch(checkAuthStatus());
+  const checkAuth = async () => {
+    if (isAuthenticated) return true;
+    if (isAuthenticating) return false;
+
+    try {
+      await dispatch(checkAuthStatus()).unwrap();
+      return true;
+    } catch {
+      return false;
     }
   };
 
@@ -40,6 +45,6 @@ export const useAuth = () => {
     logout,
     checkAuth,
     clearAuthError,
-    isAuthenticating
+    isAuthenticating,
   };
-}; 
+};

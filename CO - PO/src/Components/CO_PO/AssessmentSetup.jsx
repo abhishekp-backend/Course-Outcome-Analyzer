@@ -6,7 +6,15 @@ import { useSelector } from "react-redux";
 export default function AssessmentSetup() {
   const { currentSubject } = useSelector((state) => state.subjects);
 
-  if (!currentSubject) return <p>Loading...</p>;
+  if (!currentSubject) {
+    return (
+      <div className="px-20 pt-10">
+        <div className="bg-white rounded-xl shadow-sm p-6 text-gray-500">
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   const assessments = [
     { key: "internalAssessment", title: "Internal Assessment" },
@@ -16,24 +24,55 @@ export default function AssessmentSetup() {
   ];
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="px-20 pt-6 space-y-8">
 
-      {/* UTs (contain COs) */}
-      <UTAccordion title={"Course Outcome"} cos={currentSubject.co?.cos} />
-      {/* Update through each co doc id and field names */}
+      {/* 🔥 Course Outcomes */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-5 bg-red-500 rounded" />
+          <h2 className="text-lg font-semibold text-gray-800">
+            Course Outcomes
+          </h2>
+        </div>
 
-      {/* Simple assessments */}
-      {assessments?.map((a) => {
-        const assessData = currentSubject?.co?.[a?.key];
-        return (
-          <SimpleAssessment
-            key={a.key}
-            title={a.title}
-            field={a.key}
-            thresholds={assessData}
+        <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <UTAccordion
+            title={"Course Outcome"}
+            cos={currentSubject.co?.cos}
           />
-        );
-      })}
+        </div>
+      </div>
+
+      {/* 🔥 Assessments */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-5 bg-red-500 rounded" />
+          <h2 className="text-lg font-semibold text-gray-800">
+            Assessments
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {assessments.map((a) => {
+            const assessData = currentSubject?.co?.[a.key];
+
+            return (
+              <div
+                key={a.key}
+                className="relative group"
+              >
+
+                <SimpleAssessment
+                  title={a.title}
+                  field={a.key}
+                  thresholds={assessData}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
     </div>
   );
 }

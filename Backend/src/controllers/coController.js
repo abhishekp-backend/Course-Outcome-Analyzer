@@ -64,50 +64,93 @@ exports.getCOsBySubject = async (req, res) => {
 // Update a CO
 exports.updateCO = async (req, res) => {
   try {
-    let { classId, cos } = req.body;
+    let { classId, cos, tws, assess } = req.body;
 
-    if (!classId || !cos || cos.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid payload" });
+    // -----------------------------
+    // 1. Validate classId
+    // -----------------------------
+    if (!classId) {
+      return res.status(400).json({
+        success: false,
+        message: "classId is required",
+      });
     }
 
-    // Convert classId to ObjectId if string or array
     const classObjectId = Array.isArray(classId) ? classId[0] : classId;
     const classObjId = new mongoose.Types.ObjectId(classObjectId);
 
     const setQuery = {};
     const arrayFilters = [];
 
-    cos.forEach((co, index) => {
-      const alias = `elem${index}`;
-      const { _id, ...fields } = co;
-      const coObjId = new mongoose.Types.ObjectId(_id);
+    // -----------------------------
+    // 2. COS updates (array updates)
+    // -----------------------------
+    if (Array.isArray(cos) && cos.length > 0) {
+      cos.forEach((co, index) => {
+        if (!co._id) return; // skip invalid
 
-      for (const key in fields) {
-        setQuery[`cos.$[${alias}].${key}`] = fields[key];
+        const alias = `elem${index}`;
+        const { _id, ...fields } = co;
+
+        const coObjId = new mongoose.Types.ObjectId(_id);
+
+        for (const key in fields) {
+          setQuery[`cos.$[${alias}].${key}`] = fields[key];
+        }
+
+        arrayFilters.push({ [`${alias}._id`]: coObjId });
+      });
+    }
+
+    // -----------------------------
+    // 3. TWS update (simple field)
+    // -----------------------------
+    if (typeof tws === "number") {
+      setQuery["tws"] = tws;
+    }
+
+    // -----------------------------
+    // 4. ASSESS updates (flat object)
+    // -----------------------------
+    if (assess && typeof assess === "object") {
+      for (const key in assess?.tw) {
+        setQuery[`tw.${key}`] = assess?.tw[key];
       }
+    }
 
-      arrayFilters.push({ [`${alias}._id`]: coObjId });
-    });
-    console.log(setQuery, arrayFilters)
+    console.log(setQuery);
 
+    // -----------------------------
+    // 5. Guard: nothing to update
+    // -----------------------------
+    if (Object.keys(setQuery).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid fields to update",
+      });
+    }
+
+    // -----------------------------
+    // 6. Execute update
+    // -----------------------------
     await CourseOutcome.updateMany(
       { classId: classObjId },
       { $set: setQuery },
-      { arrayFilters, runValidators: true },
+      {
+        arrayFilters: arrayFilters.length ? arrayFilters : undefined,
+        runValidators: true,
+      },
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Course Outcome updated successfully",
+      message: "Updated successfully",
     });
   } catch (error) {
-    console.error("Error updating CO:", error);
-    res.status(400).json({
+    console.error(error);
+    return res.status(500).json({
       success: false,
-      message: "Failed to update Course Outcome",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -308,14 +351,16 @@ exports.calculateCOAttainment = async (req, res) => {
   const marks = await StudentMarks.find({ class: classId });
   const cos = await CourseOutcome.findOne({ classId });
   const dbFields = Array.from({ length: 6 }, (_, i) => `ut1co${i + 1}`);
-  let lv1 = 0, lv2 = 0, lv3 = 0;
+  let lv1 = 0,
+    lv2 = 0,
+    lv3 = 0;
   const mappings = marks.map((student) => {
     const result = {};
-    
+
     for (let field of dbFields) {
       const index = Number(field.at(-1)); // assuming co1, co2, etc.
       const score = student[field];
-      const thresholds = cos.cos[index-1];
+      const thresholds = cos.cos[index - 1];
       result[field] =
         score >= thresholds.t1
           ? 3
@@ -326,11 +371,9 @@ exports.calculateCOAttainment = async (req, res) => {
               : 0;
       if (score >= thresholds.t1) {
         lv1++;
-      }
-      else if (score >= thresholds.t2) {
+      } else if (score >= thresholds.t2) {
         lv2++;
-      }
-      else if (score >= thresholds.t3) {
+      } else if (score >= thresholds.t3) {
         lv3++;
       }
     }
@@ -338,5 +381,5 @@ exports.calculateCOAttainment = async (req, res) => {
     return result;
   });
 
-  return res.status(200).json({mappings, lv1, lv2, lv3});
+  return res.status(200).json({ mappings, lv1, lv2, lv3 });
 };

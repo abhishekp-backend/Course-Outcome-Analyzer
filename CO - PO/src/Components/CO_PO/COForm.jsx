@@ -19,98 +19,117 @@ export default function COForm({ co, innerDoc }) {
 
   const handleChange = (field, value) => {
     const updates = { [field]: value };
-    try {
-      setLocalCo((prev) => ({ ...prev, [field]: value }));
-      dispatch(
-        updateCoPosField({
-          classId: location.pathname.split("/").slice(-1),
-          "cos._id": { [innerDoc.toString()]: updates },
-        }),
-      );
-    } catch (err) {
-      console.log(err);
-    }
+
+    setLocalCo((prev) => ({ ...prev, [field]: value }));
+
+    dispatch(
+      updateCoPosField({
+        classId: location.pathname.split("/").slice(-1),
+        "cos._id": { [innerDoc.toString()]: updates },
+      })
+    );
   };
 
+  const inputClass =
+    "w-full bg-gray-50 border border-gray-200 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-300 transition";
+
   return (
-    <div className="p-4 space-y-4 border-t-0 border border-gray-100 rounded-b-xl shadow-lg ">
-      {/* Question + Total Marks */}
-      <div className="flex gap-1">
-        <input
-          type="text"
-          placeholder={`${co.name} Question`}
-          className="w-full border rounded p-2"
-          value={localCo.question}
-          onChange={(e) => handleChange("question", e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Total Marks"
-          className="border rounded p-2"
-          value={localCo.totalMarks}
-          onChange={(e) =>
-            handleChange("totalMarks", Number(Number(e.target.value)))
-          }
-        />
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-6">
+
+      {/* 🔥 Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-1.5 h-6 bg-red-500 rounded" />
+        <h2 className="text-base font-semibold text-gray-800">
+          CO Mapping
+        </h2>
       </div>
 
-      {/* Thresholds */}
-      <div className="grid grid-cols-2 gap-4">
-        <input
-          type="number"
-          placeholder={`Threshold Level 1`}
-          className="border rounded p-2"
-          value={localCo.t1}
-          onChange={(e) => handleChange("t1", Number(e.target.value))}
-        />
-        <input
-          type="number"
-          placeholder={`Threshold Level 2`}
-          className="border rounded p-2"
-          value={localCo.t2}
-          onChange={(e) => handleChange("t2", Number(e.target.value))}
-        />
-        <input
-          type="number"
-          placeholder={`Threshold Level 3`}
-          className="border rounded p-2"
-          value={localCo.t3}
-          onChange={(e) => handleChange("t3", Number(e.target.value))}
-        />
-      </div>
+      {/* 🔥 Question + Marks */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-      {/* BT Level Mapping */}
-      <div className="flex w-full">
-        <div className="mr-auto">
-          <p className="font-medium mb-2">Topic</p>
-          <input 
-          type="text"
-          onChange={(e) => {
-            handleChange("topic", e.target.value);
-          }}
-          value={localCo.topic}
-          className="border rounded p-2 w-[18rem]"
-          placeholder="Topic" />
+        <div className="space-y-2 md:col-span-1">
+          <label className="text-sm text-gray-600">Question</label>
+          <input
+            type="text"
+            placeholder={`${co.name} Question`}
+            className={inputClass}
+            value={localCo.question}
+            onChange={(e) => handleChange("question", e.target.value)}
+          />
         </div>
-        <div>
-          <p className="font-medium mb-2">BT Level Mapping</p>
-            <select
-              className="border rounded p-1 border-gray-300/80"
-              value={localCo.btLevel}
-              onChange={(e) =>
-                handleChange("btLevel", Number(e.target.value))
-              }
-            >
-              <option value="" disabled>
-                Select BT Level
+
+        <div className="space-y-2">
+          <label className="text-sm text-gray-600">Total Marks</label>
+          <input
+            type="number"
+            className={inputClass}
+            value={localCo.totalMarks}
+            onChange={(e) =>
+              handleChange("totalMarks", Number(e.target.value))
+            }
+          />
+        </div>
+      </div>
+
+      {/* 🔥 Thresholds */}
+      <div className="space-y-3">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          Threshold Levels
+        </p>
+
+        <div className="grid grid-cols-3 gap-4">
+          {["t1", "t2", "t3"].map((key, i) => (
+            <div key={key} className="space-y-1">
+              <label className="text-xs text-gray-500">
+                Level {i + 1}
+              </label>
+              <input
+                type="number"
+                className={inputClass}
+                value={localCo[key] || ""}
+                onChange={(e) =>
+                  handleChange(key, Number(e.target.value))
+                }
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 🔥 Topic + BT Level */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+
+        <div className="space-y-2">
+          <label className="text-sm text-gray-600">Topic</label>
+          <input
+            type="text"
+            className={inputClass}
+            value={localCo.topic}
+            placeholder="Enter topic"
+            onChange={(e) => handleChange("topic", e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm text-gray-600">BT Level Mapping</label>
+          <select
+            className={inputClass}
+            value={localCo.btLevel}
+            onChange={(e) =>
+              handleChange("btLevel", Number(e.target.value))
+            }
+          >
+            <option value="" disabled>
+              Select BT Level
+            </option>
+            {BT_LEVELS.map((level, idx) => (
+              <option key={idx} value={idx + 1}>
+                {level}
               </option>
-              {BT_LEVELS.map((levelName, levelIndex) => (
-                <option key={levelIndex} value={levelIndex + 1}>
-                  {levelName}
-                </option>
-              ))}
-            </select>
+            ))}
+          </select>
         </div>
+
       </div>
     </div>
   );

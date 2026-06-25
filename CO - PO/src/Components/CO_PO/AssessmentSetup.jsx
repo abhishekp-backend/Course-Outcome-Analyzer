@@ -21,6 +21,7 @@ export default function AssessmentSetup() {
     { key: "termWork", title: "Term Work" },
     { key: "practicals", title: "Practicals" },
     { key: "pbls", title: "PBLs" },
+    { key: "attendance", title: "Attendance" },
   ];
 
   return (
@@ -39,6 +40,23 @@ export default function AssessmentSetup() {
           <UTAccordion
             title={"Course Outcome"}
             cos={currentSubject.co?.cos}
+          />
+        </div>
+      </div>
+      
+      {/* Project Outcomes */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-5 bg-red-500 rounded" />
+          <h2 className="text-lg font-semibold text-gray-800">
+            Project Outcomes
+          </h2>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <UTAccordion
+            title={"Project Outcome"}
+            cos={currentSubject.co?.pos}
           />
         </div>
       </div>

@@ -15,8 +15,8 @@ export const useStudents = () => {
   const dispatch = useDispatch();
   const { students, loading, error } = useSelector((state) => state.students);
 
-  const fetchStudentsOfSubject = async(subjectID)=>{
-    dispatch(fetchStudentsBySubject(subjectID));
+  const fetchStudentsOfSubject = async({classId})=>{
+    dispatch(fetchStudentsBySubject({classId, }));
   }
 
   const fetchOneStudent = async (data) => {

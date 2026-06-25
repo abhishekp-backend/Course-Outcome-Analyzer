@@ -70,8 +70,25 @@ exports.addStudent = async (req, res) => {
 exports.getAllStudents = async (req, res) => {
   try {
     const filter = req.query;
-    let classRoom = await section.findById(filter.class, {_id: 0, academicYear: 1, division: 1, semester: 1, branch: 1});
+
+    let classRoom = await section.findById(filter.class, {
+      _id: 0,
+      academicYear: 1,
+      division: 1,
+      semester: 1,
+      branch: 1,
+    });
+
     if (filter) {
+      if (!classRoom) {
+        return res.status(404).json({
+          success: false,
+          message: "Section not found",
+        });
+      }
+
+      const classId = new mongoose.Types.ObjectId(filter.class);
+
       classRoom = classRoom.toObject();
       const students = await Student.aggregate([
         { $match: classRoom },
@@ -80,10 +97,26 @@ exports.getAllStudents = async (req, res) => {
         {
           $lookup: {
             from: "studentmarks",
-            let: { studentPrn: "$prn" },
+            let: {
+              studentPrn: "$prn",
+            },
             pipeline: [
-              { $match: { $expr: { $eq: ["$prn", "$$studentPrn"] } } },
-              { $project: { _id: 0, prn: 0 } },
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$prn", "$$studentPrn"] },
+                      { $eq: ["$class", classId] },
+                    ],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  prn: 0,
+                },
+              },
             ],
             as: "performance",
           },
@@ -115,7 +148,7 @@ exports.getStudentById = async (req, res) => {
       students.map(async (e) => {
         let res = await marks.findOne(
           { prn: e.prn },
-          { _id: 0, prn: 0, subject: 0 }
+          { _id: 0, prn: 0, subject: 0 },
         );
         return {
           roll: e.roll,
@@ -123,7 +156,7 @@ exports.getStudentById = async (req, res) => {
           prn: e.prn,
           ...res?._doc, // spreading mongoose doc safely
         };
-      })
+      }),
     );
 
     if (!result || result.length === 0) {
@@ -155,7 +188,7 @@ exports.updateStudentMarks = async (req, res) => {
     const student = await Student.findByIdAndUpdate(
       req.params.id,
       { name, roll, mobile, subject },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!student) {
@@ -188,11 +221,11 @@ exports.updateStudent = async (req, res) => {
       if (isObject(temp)) {
         temp = flattenObject(data[prn]);
       }
-      console.log(temp);
+      
       await marks.updateOne(
         { subject: id, prn: prn },
         { $set: temp },
-        { upsert: true }
+        { upsert: true },
       );
     }
 
@@ -234,75 +267,130 @@ exports.deleteStudent = async (req, res) => {
 };
 
 exports.uploadStudents = [
-  upload.single("file"), // handles a single file named "file"
+  upload.single("file"),
   async (req, res) => {
+    const session = await mongoose.startSession();
+
     try {
       if (!req.file) {
-        return res
-          .status(400)
-          .json({ success: false, message: "No file uploaded" });
+        return res.status(400).json({
+          success: false,
+          message: "No file uploaded",
+        });
       }
-      let { id, academicId, classId } = req.body
-      id = JSON.parse(id)
 
-      // Parse Excel/CSV from memory
-      const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+      let { id, academicId, classId } = req.body;
+      id = JSON.parse(id);
+
+      const workbook = xlsx.read(req.file.buffer, {
+        type: "buffer",
+      });
+
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const rows = xlsx.utils.sheet_to_json(sheet);
-      
-      const branchId = await branch.findOne({branchName: id['branch']}, {_id: 1});
-      const semester = await section.findOne({_id: id['classId']});
-      const subjectId = await subject.findOne({_id: semester.subject});
+
+      const branchDoc = await branch.findOne(
+        { branchName: id.branch },
+        { _id: 1 }
+      );
+
+      if (!branchDoc) {
+        return res.status(404).json({
+          success: false,
+          message: "Branch not found",
+        });
+      }
+
+      const sectionDoc = await section.findById(classId);
+
+      if (!sectionDoc) {
+        return res.status(404).json({
+          success: false,
+          message: "Section not found",
+        });
+      }
+
+      const subjectDoc = await subject.findById(sectionDoc.subject, {
+        _id: 1,
+      });
+
+      if (!subjectDoc) {
+        return res.status(404).json({
+          success: false,
+          message: "Subject not found",
+        });
+      }
 
       const studentInfos = rows.map((row) => ({
         name: row.Name,
         prn: row.PRN,
         roll: row.Roll,
-        branch: branchId,
-        semester: semester.semester,
-        division: id['division'],
+        branch: branchDoc._id,
+        semester: sectionDoc.semester,
+        division: id.division,
         academicYear: academicId,
-        class: classId
+        class: classId,
       }));
 
       const studentMarks = rows.map((row) => ({
-        prn: row.PRN, // link with student info
-        subject: subjectId,
+        prn: row.PRN,
+        subject: subjectDoc._id,
         class: classId,
+
         ut1co1: Number(row["UT1-CO1"] || 0),
         ut1co2: Number(row["UT1-CO2"] || 0),
         ut1co3: Number(row["UT1-CO3"] || 0),
         ut1co4: Number(row["UT1-CO4"] || 0),
         ut1co5: Number(row["UT1-CO5"] || 0),
         ut1co6: Number(row["UT1-CO6"] || 0),
+
         ut2co1: Number(row["UT2-CO1"] || 0),
         ut2co2: Number(row["UT2-CO2"] || 0),
         ut2co3: Number(row["UT2-CO3"] || 0),
         ut2co4: Number(row["UT2-CO4"] || 0),
         ut2co5: Number(row["UT2-CO5"] || 0),
         ut2co6: Number(row["UT2-CO6"] || 0),
+
         ia: Number(row.IA ?? 0),
         pbl: Number(row.PBL ?? 0),
         tw: Number(row.TW ?? 0),
-        universityExam: Number(row["UniversityExam"] || row["universityExam"] || row["University"] || 0),
+
+        universityExam: Number(
+          row["UniversityExam"] ||
+            row["universityExam"] ||
+            row["University"] ||
+            0
+        ),
       }));
 
-      await Student.insertMany(studentInfos);
-      await marks.insertMany(studentMarks);
+      await session.withTransaction(async () => {
+        await Student.insertMany(studentInfos, {
+          session,
+          ordered: true,
+        });
 
-      res.status(200).json({
+        await marks.insertMany(studentMarks, {
+          session,
+          ordered: true,
+        });
+      });
+
+      return res.status(200).json({
         success: true,
         message: "Students uploaded successfully",
         count: studentInfos.length,
       });
     } catch (error) {
       console.error(error);
-      res.status(500).json({
+
+      return res.status(500).json({
         success: false,
         message: "Failed to process file",
         error: error.message,
       });
+    } finally {
+      await session.endSession();
     }
   },
 ];

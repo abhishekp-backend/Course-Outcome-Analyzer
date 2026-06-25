@@ -1,84 +1,66 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { updateSAField } from "../../store/slices/userChanges";
+import { useCO_PO_Mapping } from "../../hooks/useCO_PO_Mapping";
 
 function CO_PO_Mapping({ subjectId }) {
-  const dispatch = useDispatch();
-
-  const { currentSubject } = useSelector((state) => state.subjects);
-
-  const cos = currentSubject?.cos || [];
-  const tws = currentSubject?.tws || 0;
-  const twData = currentSubject?.tw || {};
-
-  const handleChange = (twIndex, coIndex, value) => {
-    const key = `tw${twIndex}co${coIndex}`;
-
-    dispatch(
-      updateSAField({
-        updates: {
-          [`tw.${key}`]: Number(value),
-        },
-      })
-    );
-  };
+  const { poAttainment } = useCO_PO_Mapping(subjectId);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
-
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-1.5 h-6 bg-red-500 rounded" />
         <h2 className="text-lg font-semibold text-gray-800">
-          CO × Term Work Mapping
+          CO × Term Work Mapping (Attainments)
         </h2>
       </div>
 
-      {/* Matrix */}
-      <div className="space-y-4">
+      {/* DATA */}
+      {poAttainment?.mappings?.length > 0 ? (
+        // TABLE MODE
+        <div className="overflow-x-auto">
+          <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead className="bg-gray-100 text-sm text-gray-700">
+              <tr>
+                <th className="text-left p-3 border">CO</th>
+                <th className="text-center p-3 border">Mapping</th>
+              </tr>
+            </thead>
 
-        {cos.map((co, coIndex) => (
-          <div
-            key={co._id}
-            className="bg-white border border-gray-100 rounded-xl p-4 space-y-3"
-          >
-
-            {/* CO label */}
-            <div className="font-semibold text-gray-800">
-              {co.name}
-            </div>
-
-            {/* TW inputs */}
-            <div className="grid gap-3" style={{
-              gridTemplateColumns: `repeat(${tws}, minmax(0, 1fr))`
-            }}>
-
-              {Array.from({ length: tws }).map((_, twIndex) => {
-                const key = `tw${twIndex + 1}co${coIndex + 1}`;
-
-                return (
-                  <input
-                    key={key}
-                    type="number"
-                    value={twData?.[key] || 0}
-                    onChange={(e) =>
-                      handleChange(
-                        twIndex + 1,
-                        coIndex + 1,
-                        e.target.value
-                      )
-                    }
-                    className="border border-gray-200 rounded-lg h-10 px-2 text-sm bg-gray-50 focus:ring-2 focus:ring-red-400 focus:border-red-300 transition"
-                    placeholder={key}
-                  />
-                );
-              })}
-
+            <tbody>
+              {poAttainment.mappings.map((m, idx) => (
+                <tr key={idx} className="text-sm">
+                  <td className="p-3 border">{m.co ?? "-"}</td>
+                  <td className="p-3 border text-center">{m.value ?? "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        // TILE MODE
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 rounded-lg bg-gray-50 border text-center">
+            <div className="text-sm text-gray-500">LV1</div>
+            <div className="text-xl font-semibold text-gray-800">
+              {poAttainment?.lv1 ?? 0}
             </div>
           </div>
-        ))}
 
-      </div>
+          <div className="p-4 rounded-lg bg-gray-50 border text-center">
+            <div className="text-sm text-gray-500">LV2</div>
+            <div className="text-xl font-semibold text-gray-800">
+              {poAttainment?.lv2 ?? 0}
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-gray-50 border text-center">
+            <div className="text-sm text-gray-500">LV3</div>
+            <div className="text-xl font-semibold text-gray-800">
+              {poAttainment?.lv3 ?? 0}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

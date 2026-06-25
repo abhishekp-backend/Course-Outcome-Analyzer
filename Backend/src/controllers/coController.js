@@ -64,7 +64,7 @@ exports.getCOsBySubject = async (req, res) => {
 // Update a CO
 exports.updateCO = async (req, res) => {
   try {
-    let { classId, cos, tws, assess } = req.body;
+    let { classId, cos, assess } = req.body;
 
     // -----------------------------
     // 1. Validate classId
@@ -87,26 +87,35 @@ exports.updateCO = async (req, res) => {
     // -----------------------------
     if (Array.isArray(cos) && cos.length > 0) {
       cos.forEach((co, index) => {
-        if (!co._id) return; // skip invalid
+        if (!co._id) return;
 
         const alias = `elem${index}`;
         const { _id, ...fields } = co;
 
         const coObjId = new mongoose.Types.ObjectId(_id);
 
+        // Update COS
         for (const key in fields) {
           setQuery[`cos.$[${alias}].${key}`] = fields[key];
         }
 
-        arrayFilters.push({ [`${alias}._id`]: coObjId });
+        // Update POS (if they share the same structure/ids)
+        for (const key in fields) {
+          setQuery[`pos.$[${alias}].${key}`] = fields[key];
+        }
+
+        // Add array filter ONLY ONCE
+        arrayFilters.push({
+          [`${alias}._id`]: coObjId,
+        });
       });
     }
 
     // -----------------------------
     // 3. TWS update (simple field)
     // -----------------------------
-    if (typeof tws === "number") {
-      setQuery["tws"] = tws;
+    if (typeof assess.tws === "number") {
+      setQuery["tws"] = assess.tws;
     }
 
     // -----------------------------
@@ -117,9 +126,6 @@ exports.updateCO = async (req, res) => {
         setQuery[`tw.${key}`] = assess?.tw[key];
       }
     }
-
-    console.log(setQuery);
-
     // -----------------------------
     // 5. Guard: nothing to update
     // -----------------------------
@@ -369,6 +375,54 @@ exports.calculateCOAttainment = async (req, res) => {
             : score >= thresholds.t3
               ? 1
               : 0;
+      if (score >= thresholds.t1) {
+        lv1++;
+      } else if (score >= thresholds.t2) {
+        lv2++;
+      } else if (score >= thresholds.t3) {
+        lv3++;
+      }
+    }
+
+    return result;
+  });
+
+  return res.status(200).json({ mappings, lv1, lv2, lv3 });
+};
+
+exports.calculateCOAttainmentTW = async (req, res) => {
+  const { classId } = req.params;
+
+  const marks = await StudentMarks.find({ class: classId });
+  const record = await YourModel.findOne({ classId });
+  const cos = record.cos;
+
+  const dbFields = Object.keys(record.tw || {}); // keep TW-driven loop
+
+  let lv1 = 0,
+    lv2 = 0,
+    lv3 = 0;
+
+  const mappings = marks.map((student) => {
+    const result = {};
+
+    for (let field of dbFields) {
+      const score = student.tw?.[field] ?? 0;
+
+      // extract CO index from tw1co3 → 3
+      const coIndex = Number(field.split("co")[1]);
+
+      const thresholds = cos[coIndex - 1];
+
+      result[field] =
+        score >= thresholds.t1
+          ? 3
+          : score >= thresholds.t2
+            ? 2
+            : score >= thresholds.t3
+              ? 1
+              : 0;
+
       if (score >= thresholds.t1) {
         lv1++;
       } else if (score >= thresholds.t2) {

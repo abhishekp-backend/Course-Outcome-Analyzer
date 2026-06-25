@@ -4,14 +4,14 @@ import { api } from "../reqURL";
 // Async thunks for API calls
 export const fetchStudentsBySubject = createAsyncThunk(
   "students/fetchStudents",
-  async (subjectID, { rejectWithValue, getState }) => {
+  async ({classId, }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       if (state.students.fetched) {
         return {data: state.students};
       }
       const year = new Date().getFullYear().toString();
-      const response = await api.post(`api/students/getStudents?class=${subjectID}&year=${year}`);
+      const response = await api.post(`api/students/getStudents?class=${classId}&year=${year}`);
       
       if (!response.data.success) {
         const errorData = await response.message;

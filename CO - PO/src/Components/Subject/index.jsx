@@ -15,7 +15,7 @@ import TermWorkManagement from "../CO_PO/TermWorkManagement";
 export function SubjectInfo() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get("tab") || "marks";
+  const tab = searchParams.get("tab") || "co";
 
   const { removeStudent, fetchStudentsOfSubject } = useStudents(id);
   const { students } = useSelector((state) => state.students);
@@ -34,7 +34,7 @@ export function SubjectInfo() {
   useEffect(() => {
     if (!loadingCO) fetchCO(id);
     getSubjectInfo(id);
-    if (activeTab === "marks") fetchStudentsOfSubject(id);
+    if (activeTab === "marks") fetchStudentsOfSubject({classId: id});
     fetchAllSubject();
   }, []);
 
@@ -73,8 +73,8 @@ export function SubjectInfo() {
       <div className="bg-white rounded-xl shadow-sm px-5">
         <div className="flex gap-6 border-b border-gray-100">
           {[
-            { key: "marks", label: "Marks" },
             { key: "co", label: "Course Outcomes" },
+            { key: "marks", label: "Marks" },
             { key: "experiments", label: "TW COs" },
             { key: "mapping", label: "CO-PO Mapping" },
           ].map((t) => (

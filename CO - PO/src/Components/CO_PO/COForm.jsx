@@ -40,7 +40,7 @@ export default function COForm({ co, innerDoc }) {
       <div className="flex items-center gap-3">
         <div className="w-1.5 h-6 bg-red-500 rounded" />
         <h2 className="text-base font-semibold text-gray-800">
-          CO Mapping
+          Course Outcome {co?.name.slice(2)}
         </h2>
       </div>
 

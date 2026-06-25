@@ -5,7 +5,8 @@ const {
   getCOsBySubject,
   updateCO,
   deleteCO,
-  calculateCOAttainment
+  calculateCOAttainment,
+  calculateCOAttainmentTW
 } = require('../controllers/coController');
 
 const router = express.Router();
@@ -18,6 +19,9 @@ router.post('/', createCO);
 
 // Calculate CO attainment
 router.get('/class/:classId', calculateCOAttainment);
+
+// Calculate TW atttainment
+router.get('/class/tw/:classId', calculateCOAttainmentTW);
 
 // Get all COs for a subject
 router.get('/subject/:classId', getCOsBySubject);

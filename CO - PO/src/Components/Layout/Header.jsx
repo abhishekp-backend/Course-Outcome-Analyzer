@@ -1,6 +1,7 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useSubjects } from "../../hooks/useSubjects";
 
 function Header() {
   const { currentSubject } = useSelector((state) => state.subjects);
@@ -13,11 +14,13 @@ function Header() {
   }
 
   const location = useLocation();
-
+  const { id } = useParams();
+  const { subjects } = useSubjects();
+  const selectedSubject = subjects.find((s) => s._id === id);
   const title =
     location.pathname.split("/")[1] !== "subject"
       ? capitalize(location.pathname.slice(1))
-      : `${currentSubject?.name}-${currentSubject?.branch}`;
+      : `${selectedSubject?.name || ""}-${selectedSubject?.branch || ""}`;
 
   return (
     <div className="w-full px-6 py-4 flex items-center 

@@ -81,6 +81,7 @@ export const calculatePOAttainment = createAsyncThunk(
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${auth.token}`
         },
+        credentials: "include",
         body: JSON.stringify({ coAttainment })
       });
 

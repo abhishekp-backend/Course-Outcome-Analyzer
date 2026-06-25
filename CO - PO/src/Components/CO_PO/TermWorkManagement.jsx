@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { updateCoPosField } from "../../store/slices/userChanges";
+import { updateTWField } from "../../store/slices/userChanges";
 import TermWork from "./Components/TermWork";
 
 function TermWorkManagement({ termWorks }) {
@@ -17,7 +17,7 @@ function TermWorkManagement({ termWorks }) {
 
   const changeTWData = (value) => {
     dispatch(
-      updateCoPosField({
+      updateTWField({
         classId: termWorks?.classId,
         updates: {
           tws: Number(value), // ✅ direct field update

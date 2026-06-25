@@ -8,15 +8,7 @@ export default function UTAccordion({ title, cos }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
 
-      {/* 🔥 Header (subtle red accent, not full red block) */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-        <div className="w-1.5 h-5 bg-red-500 rounded" />
-        <h2 className="text-lg font-semibold text-gray-800">
-          {title}
-        </h2>
-      </div>
-
-      {/* 🔥 Accordion body */}
+      {/* 🔥 Accordion body */}   
       <div className="p-3 space-y-2">
 
         {cos?.map((co, index) => {

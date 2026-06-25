@@ -18,8 +18,12 @@ export const updateCOPO = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const { userChanges } = getState();
-      console.log(userChanges)
-      const response = await api.post("/api/cos/updateCO", {cos: userChanges.coPos.cos, assess: userChanges.assess, classId: userChanges.classId});
+      const response = await api.post("/api/cos/updateCO", {
+        cos: userChanges.coPos.cos,
+        assess: userChanges.assess,
+        classId: userChanges.classId,
+        tws: userChanges?.tws,
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.message || "Something went wrong!");
@@ -50,7 +54,6 @@ const userChanges = createSlice({
         }
       }
       state.classId = action.payload.classId[0];
-      console.log(JSON.stringify(state.coPos));
     },
     updateSAField(state, action) {
       const { updates, classId } = action.payload;
@@ -65,7 +68,6 @@ const userChanges = createSlice({
 
     updateTWField(state, action) {
       const { updates, classId } = action.payload;
-
       // 🔥 attach classId for backend
       state.classId = classId;
 
@@ -73,7 +75,12 @@ const userChanges = createSlice({
       if (!state.assess.tw) state.assess.tw = {};
 
       for (const key in updates) {
-        state.assess.tw[key] = updates[key];
+        if (key !== "tws") {
+          state.assess.tw[key] = updates[key];
+        }
+        else {
+          state.assess.tws = updates["tws"];
+        }
       }
     },
 
@@ -102,6 +109,6 @@ export const {
   removeCoPos,
   clearCos,
   updateSAField,
-  updateTWField
+  updateTWField,
 } = userChanges.actions;
 export default userChanges.reducer;

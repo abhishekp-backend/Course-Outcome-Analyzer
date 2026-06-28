@@ -10,13 +10,19 @@ import {
   fetchStudentsBySubject
 } from '../store/slices/studentSlice';
 import {clearSingleStudent} from "../store/slices/studentSlice"
+import { useNavigate } from 'react-router-dom';
 
 export const useStudents = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { students, loading, error } = useSelector((state) => state.students);
 
   const fetchStudentsOfSubject = async({classId})=>{
-    dispatch(fetchStudentsBySubject({classId, }));
+    const response = await dispatch(fetchStudentsBySubject({classId, }));
+    if ([401, 403].includes(response?.data?.payload?.status)) {
+      navigate("/");
+    }
   }
 
   const fetchOneStudent = async (data) => {

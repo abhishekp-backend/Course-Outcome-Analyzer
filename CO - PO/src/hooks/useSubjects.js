@@ -5,9 +5,11 @@ import {
   getSubject,
   fetchCO as fetchCOs
 } from '../store/slices/subjectSlice';
+import { useNavigate } from 'react-router-dom';
 
 export const useSubjects = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { subjects, loading, error, isSubjectFetched, isSubjectFetching, isCOFetched, loadingCO } = useSelector((state) => state.subjects);
 
   const fetchAllSubject = async()=>{
@@ -26,7 +28,10 @@ export const useSubjects = () => {
   const fetchCO = async(subjectId) => {
     try {
       if (!loadingCO) {
-        dispatch(fetchCOs(subjectId));
+        const response = await dispatch(fetchCOs(subjectId));
+        if ([401, 403]?.includes(response?.payload?.status)) {
+          navigate("/");
+        }
       }
     }
     catch (error) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import toast from "react-hot-toast";
+import { useSubjects } from "../../hooks/useSubjects";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ function Login() {
     password: "",
   });
   const { login, loading, error, isAuthenticated, clearAuthError } = useAuth();
+  const { fetchAllSubject } = useSubjects();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,12 +33,13 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = login(formData);
-    if (!res.data.success) {
+    const res = await login(formData);
+    if (!res?.payload?.success) {
       toast.error("Invalid credentials!");
       return;
     }
-    toast.success("Verified user!");
+    fetchAllSubject();
+    toast?.success("Verified user!");
   };
 
   return (

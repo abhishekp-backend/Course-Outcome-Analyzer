@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { useParams, useSearchParams } from "react-router-dom";
-import StudentForm from "../Student/StudentForm";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+
 import StudentList from "../Student/StudentList";
+import MarksUploadSection from "./MarksUploadSection";
+
 import { useStudents } from "../../hooks/useStudent";
 import { useSubjects } from "../../hooks/useSubjects";
+
 import AssessmentSetup from "../CO_PO/AssessmentSetup";
 import CO_PO_Mapping from "../CO_PO/CO_PO_Mapping";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { updateCOPO } from "../../store/slices/userChanges";
 import TermWorkManagement from "../CO_PO/TermWorkManagement";
+
+import { updateCOPO } from "../../store/slices/userChanges";
 
 export function SubjectInfo() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const tab = searchParams.get("tab") || "co";
 
   const { removeStudent, fetchStudentsOfSubject } = useStudents(id);
-  const { students } = useSelector((state) => state.students);
   const { getSubjectInfo, subjects, fetchAllSubject, fetchCO, loadingCO } =
     useSubjects();
 
@@ -29,22 +31,31 @@ export function SubjectInfo() {
   const dispatch = useDispatch();
 
   const { currentSubject } = useSelector((state) => state.subjects);
+  const { students } = useSelector((state) => state.students);
   const { coPos } = useSelector((state) => state.userChanges);
 
   useEffect(() => {
     if (!loadingCO) fetchCO(id);
+
     getSubjectInfo(id);
-    if (activeTab === "marks") fetchStudentsOfSubject({classId: id});
+
+    if (activeTab === "marks") {
+      fetchStudentsOfSubject({ classId: id });
+    }
+
     fetchAllSubject();
   }, []);
 
   useEffect(() => {
     setSearchParams({ tab: activeTab });
+
+    if (activeTab === "marks") {
+      fetchStudentsOfSubject({ classId: id });
+    }
   }, [activeTab]);
 
   return (
     <div className="px-20 pt-10 space-y-6">
-      {/* 🔥 HEADER ROW */}
       <div className="flex items-center gap-4">
         <button
           onClick={() => nav("/dashboard")}
@@ -59,7 +70,6 @@ export function SubjectInfo() {
             "Loading..."}
         </h1>
 
-        {/* Save button */}
         <button
           onClick={() => dispatch(updateCOPO())}
           disabled={coPos.finder || Object.keys(coPos).length === 0}
@@ -69,7 +79,6 @@ export function SubjectInfo() {
         </button>
       </div>
 
-      {/* 🔥 TABS */}
       <div className="bg-white rounded-xl shadow-sm px-5">
         <div className="flex gap-6 border-b border-gray-100">
           {[
@@ -93,13 +102,13 @@ export function SubjectInfo() {
         </div>
       </div>
 
-      {/* 🔥 CONTENT CARD */}
-      <div className="bg-white rounded-xl shadow-sm p-5">
+      <div className="bg-white rounded-xl h-full shadow-sm p-5">
         {activeTab === "marks" && (
           <>
+
             {students.length === 0 ? (
               <div className="flex p-10 rounded-lg bg-gray-50">
-                <p className="m-auto text-gray-500">No students</p>
+                <MarksUploadSection subjectId={id} />
               </div>
             ) : (
               <StudentList
@@ -115,7 +124,10 @@ export function SubjectInfo() {
         {activeTab === "co" && <AssessmentSetup subjectId={id} />}
 
         {activeTab === "experiments" && (
-          <TermWorkManagement subjectId={id} termWorks={currentSubject.co} />
+          <TermWorkManagement
+            subjectId={id}
+            termWorks={currentSubject?.co}
+          />
         )}
 
         {activeTab === "mapping" && <CO_PO_Mapping subjectId={id} />}

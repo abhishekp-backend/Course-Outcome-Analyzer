@@ -3,7 +3,7 @@ import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Header from "./Layout/Header"
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, isSearched, setSearched, searchInputRef }) => {
   const { isAuthenticated, loading, checkAuth, isAuthenticating } = useAuth();
   const location = useLocation();
 
@@ -30,7 +30,7 @@ const ProtectedRoute = ({ children }) => {
 
   return (
     <div>
-      <Header />
+      <Header isSearched={isSearched} setSearched={setSearched} searchInputRef={searchInputRef} />
       <Outlet />
     </div>
   )

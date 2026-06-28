@@ -221,7 +221,7 @@ exports.updateStudent = async (req, res) => {
       if (isObject(temp)) {
         temp = flattenObject(data[prn]);
       }
-      
+
       await marks.updateOne(
         { subject: id, prn: prn },
         { $set: temp },
@@ -292,7 +292,7 @@ exports.uploadStudents = [
 
       const branchDoc = await branch.findOne(
         { branchName: id.branch },
-        { _id: 1 }
+        { _id: 1 },
       );
 
       if (!branchDoc) {
@@ -360,7 +360,7 @@ exports.uploadStudents = [
           row["UniversityExam"] ||
             row["universityExam"] ||
             row["University"] ||
-            0
+            0,
         ),
       }));
 

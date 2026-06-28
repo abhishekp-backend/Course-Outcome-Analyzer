@@ -7,14 +7,12 @@ import StudentList from "../../Student/StudentList";
 import { clearSingleStudent } from "../../../store/slices/studentSlice";
 import { useDispatch, useSelector } from "react-redux";
 
-function Dashboard() {
+function Dashboard({ isSearched, setSearched }) {
   const { subjects, fetchAllSubject, isSubjectFetched, isSubjectFetching } =
     useSubjects();
-  const { fetchOneStudent, updateMarks } = useStudents();
+  const { updateMarks } = useStudents();
 
   const [showForm, setForm] = useState(false);
-  const [search, setSearch] = useState({ prn: "", subject: "" });
-  const [isSearched, setSearched] = useState(false);
   const [isChanged, setChanged] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -23,6 +21,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (!isSubjectFetched && !isSubjectFetching) {
+      console.log("Fetching subjects!");
       fetchAllSubject();
     }
   }, []);
@@ -35,47 +34,18 @@ function Dashboard() {
   }, [successMessage]);
 
   const handleSubjectAdded = () => {
-    setSuccessMessage("Subject added successfully");
+    seSuccessMessage("Subject added successfully");
     setForm(false);
     dispatch(fetchAllSubject());
   };
 
   return (
-    <div className="px-20 pt-10 space-y-6">
+    <div className="w-7/10 mx-auto px-20 pt-10 space-y-6">
 
       {/* 🔥 SEARCH CARD */}
-      <div className="bg-white rounded-xl shadow-sm p-5 space-y-4">
-
-        <div>
-          <p className="text-lg font-semibold text-gray-800">
-            Enter a PRN
-          </p>
-          <span className="text-sm text-gray-500">
-            Search a student using PRN
-          </span>
-        </div>
+      {isSearched && <div className="bg-white w-5/10 mx-auto rounded-xl shadow-sm p-5 space-y-4">
 
         <div className="flex gap-3 items-center">
-
-          <input
-            type="number"
-            className="flex-1 bg-gray-50 rounded-lg border border-gray-200 h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-            placeholder="Search by PRN..."
-            onChange={(e) =>
-              setSearch({ ...search, prn: e.target.value })
-            }
-            value={search.prn}
-          />
-
-          <button
-            className="bg-red-500 hover:bg-red-600 text-white px-4 h-10 rounded-lg transition"
-            onClick={() => {
-              fetchOneStudent(search);
-              setSearched(true);
-            }}
-          >
-            Search
-          </button>
 
           {isSearched && (
             <button
@@ -89,16 +59,16 @@ function Dashboard() {
             </button>
           )}
 
-          {isChanged && (
+          {/* {isChanged && (
             <button
               onClick={() => updateMarks(search.subject)}
               className="ml-auto bg-green-600 hover:bg-green-700 text-white px-4 h-10 rounded-lg shadow-sm"
             >
               Save
             </button>
-          )}
+          )} */}
         </div>
-      </div>
+      </div>}
 
       {/* 🔥 SUCCESS MESSAGE */}
       {successMessage && (
@@ -122,7 +92,7 @@ function Dashboard() {
             onSubjectAdded={handleSubjectAdded}
           />
 
-          <SubjectList subjects={subjects} />
+          <SubjectList subjects={subjects} isFetching = {isSubjectFetching} />
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm p-4">

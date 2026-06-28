@@ -1,23 +1,37 @@
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   fetchMappings,
   updateMapping,
   deleteMapping,
   calculatePOAttainment,
   clearMappingError,
-} from '../store/slices/coPoMappingSlice';
+} from "../store/slices/coPoMappingSlice";
+import { useNavigate } from "react-router-dom";
 
 export const useCO_PO_Mapping = (subjectId) => {
   const dispatch = useDispatch();
-  const { mappings, poAttainment, loading, error } = useSelector((state) => state.coPoMappings);
+  const navigate = useNavigate();
+  const { mappings, poAttainment, loading, error } = useSelector(
+    (state) => state.coPoMappings,
+  );
 
   useEffect(() => {
-    if (subjectId) {
-      dispatch(fetchMappings(subjectId));
-    }
-  }, [subjectId, dispatch]);
+    const fetchData = async () => {
+      if (!subjectId) return;
 
+      const response = await dispatch(fetchMappings(subjectId));
+
+      if (
+        fetchMappings.rejected.match(response) &&
+        [401, 403].includes(response.payload?.status)
+      ) {
+        navigate("/");
+      }
+    };
+
+    fetchData();
+  }, [subjectId, dispatch, navigate]);
 
   const updateCO_PO_Mapping = async (id, correlationLevel) => {
     try {
@@ -39,7 +53,9 @@ export const useCO_PO_Mapping = (subjectId) => {
 
   const calculatePOAttainmentFromCO = async (coAttainment) => {
     try {
-      await dispatch(calculatePOAttainment({ subjectId, coAttainment })).unwrap();
+      await dispatch(
+        calculatePOAttainment({ subjectId, coAttainment }),
+      ).unwrap();
       return { success: true };
     } catch (error) {
       return { success: false, error };
@@ -58,7 +74,6 @@ export const useCO_PO_Mapping = (subjectId) => {
     updateCO_PO_Mapping,
     removeMapping,
     calculatePOAttainmentFromCO,
-    clearError
+    clearError,
   };
 };
-

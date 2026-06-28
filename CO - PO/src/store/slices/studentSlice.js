@@ -2,9 +2,41 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "../reqURL";
 
 // Async thunks for API calls
+
+export const uploadExcel = createAsyncThunk(
+  "students/uploadExcel",
+  async ({file, classId}, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      console.log(state.subjects?.subjects.find(s => s._id === classId))
+      const selectedSubject = state.subjects?.subjects.find(s => s._id === classId);
+      if (!file) return rejectWithValue("No file selected");
+      let id = JSON.stringify({
+        branch: selectedSubject.branch,
+        division: selectedSubject.division
+      });
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("id", id);
+      fd.append("academicId", selectedSubject.academicId)
+      fd.append("classId", classId);
+
+      const response = await api.post("/api/students/upload-excel", fd, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      return response.data; // return data to reducer
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
 export const fetchStudentsBySubject = createAsyncThunk(
   "students/fetchStudents",
-  async ({classId, }, { rejectWithValue, getState }) => {
+  async ({ classId }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       if (state.students.fetched) {
@@ -128,31 +160,6 @@ export const fetchStudentByPRN = createAsyncThunk(
       return data.data;
     } catch (error) {
       return rejectWithValue(error.message || "Something went wrong");
-    }
-  }
-);
-
-export const uploadExcel = createAsyncThunk(
-  "students/uploadExcel",
-  async ({ files, id }, { rejectWithValue, getState }) => {
-    try {
-      const { auth } = getState();
-      if (!files) return alert("Pick a file");
-      const fd = new FormData();
-      fd.append("file", files);
-      fd.append("id", id) 
-      const response = await fetch("/api/students/upload-excel", {
-        method: "POST",
-        headers:{
-          Authorization: `Bearer ${auth.token}`
-        },
-        body: fd,
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      window.location.reload();
-    } catch (error) {
-      console.log(error)
-      return rejectWithValue(error.message || "Something went wrong!")
     }
   }
 );

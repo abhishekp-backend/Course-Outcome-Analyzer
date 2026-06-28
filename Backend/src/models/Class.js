@@ -31,6 +31,16 @@ const classSchema = new mongoose.Schema(
     twCounts: {
       type: Number,
       default: 0,
+    },
+    noOfStudents: {
+      type: Number,
+      default: 0,
+    },
+    target: {
+      type: Number,
+      default: 1,
+      min: 1,
+      max: 100,
     }
   },
   { timestamps: true }

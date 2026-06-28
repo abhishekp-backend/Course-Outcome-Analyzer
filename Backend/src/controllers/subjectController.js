@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 // Get all subjects for a user
 exports.getUserSubjects = async (req, res) => {
   try {
-    console.log("Faculty's Id: ", req.user?.id);
     const subjects = await Class.aggregate([
       {
         $match: {
@@ -39,6 +38,8 @@ exports.getUserSubjects = async (req, res) => {
           semester: "$subject.semester",
           name: "$subject.name",
           branch: "$branch.branchName",
+          academicId: "$subject.academicYear",
+          lastUpdated: "$subject.updatedAt"
         },
       },
     ]);

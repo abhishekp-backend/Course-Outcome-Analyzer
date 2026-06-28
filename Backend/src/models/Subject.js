@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const section = require('./Class');
 
 const subjectSchema = new mongoose.Schema({
   name: {
@@ -27,6 +28,19 @@ const subjectSchema = new mongoose.Schema({
   },
 }, {
   timestamps: true
+});
+
+subjectSchema.post("findOneAndDelete", async function (doc) {
+  if (!doc) return;
+
+  try {
+    await section.deleteMany({
+      subject: doc._id,
+    });
+  }
+  catch (error) {
+    console.log(error);
+  }
 });
 
 module.exports = mongoose.model('Subject', subjectSchema);

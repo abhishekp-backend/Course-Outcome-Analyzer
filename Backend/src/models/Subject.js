@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const section = require('./Class');
+const courseOutcome = require("./CourseOutcome");
 
 const subjectSchema = new mongoose.Schema({
   name: {
@@ -35,6 +36,10 @@ subjectSchema.post("findOneAndDelete", async function (doc) {
 
   try {
     await section.deleteMany({
+      subject: doc._id,
+    });
+    
+    await courseOutcome.deleteMany({
       subject: doc._id,
     });
   }

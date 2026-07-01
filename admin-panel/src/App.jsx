@@ -6,12 +6,11 @@ import DashboardLayout from "./Components/Dashboard/DashboardLayout";
 import Dashboard from "./Components/Dashboard/Dashboard";
 import ManageSubjects from "./Components/Dashboard/ManageSubjects";
 import ManageFaculty from "./Components/Dashboard/ManageFaculty";
-import ManageStudents from "./Components/Dashboard/ManageStudents";
 import ManageBranches from "./Components/Dashboard/ManageBranches";
 import ManageAcademicYears from "./Components/Dashboard/ManageAcademicYears";
 import ManageClasses from "./Components/Dashboard/ManageClasses";
 import { checkAuth } from "./store/slices/authSlice";
-import { useDispatch } from "react-redux"
+import { useDispatch } from "react-redux";
 
 function ProtectedRoute({ children }) {
   const dispatch = useDispatch()
@@ -37,7 +36,6 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="subjects" element={<ManageSubjects />} />
           <Route path="faculty" element={<ManageFaculty />} />
-          <Route path="students" element={<ManageStudents />} />
           <Route path="branches" element={<ManageBranches />} />
           <Route path="classes" element={<ManageClasses />} />
           <Route path="academic-years" element={<ManageAcademicYears />} />

@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { useSubjects } from "../../hooks/useSubjects";
 import { useStudents } from "../../hooks/useStudent";
 import { logoutUser } from "../../store/slices/authSlice";
+import { useAuth } from "../../hooks/useAuth";
 
 function Header({ isSearched, setSearched, searchInputRef }) {
   const { user } = useSelector((state) => state.auth);
@@ -28,6 +29,7 @@ function Header({ isSearched, setSearched, searchInputRef }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   const { fetchOneStudent } = useStudents();
+  const { logout } = useAuth();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -53,7 +55,7 @@ function Header({ isSearched, setSearched, searchInputRef }) {
       </div>
 
       {/* Center */}
-      <div className="mx-10 flex w-full max-w-xl items-center gap-3">
+      <div className="mx-10 flex max-w-xl items-center gap-3">
         <input
           type="text"
           ref={searchInputRef}
@@ -107,7 +109,7 @@ function Header({ isSearched, setSearched, searchInputRef }) {
         >
           <button
             onClick={() => {
-              logoutUser();
+              logout();
             }}
             className="w-full rounded-lg px-4 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
           >

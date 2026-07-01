@@ -87,6 +87,7 @@ const subjectSlice = createSlice({
         state.loadingCO = false;
         if (action.payload !== undefined) {
           state.currentSubject.co = action.payload;
+          state.currentSubject.coTarget = action.payload?.coTarget
         }
         state.isCOFetched = true;
       })

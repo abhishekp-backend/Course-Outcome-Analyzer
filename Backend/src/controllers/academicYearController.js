@@ -25,6 +25,7 @@ exports.createNewAcademic = async (req, res) => {
         return res.status(200).json({success: true})
     }
     catch (err) {
+        console.log("Academic year error: ", err);
         return res.status(500).json({error:err})
     }
 }

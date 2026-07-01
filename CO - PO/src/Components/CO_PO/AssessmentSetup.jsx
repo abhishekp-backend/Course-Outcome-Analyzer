@@ -24,9 +24,11 @@ export default function AssessmentSetup() {
     { key: "attendance", title: "Attendance" },
   ];
 
+  const inputClass =
+    "bg-gray-50 border border-gray-200 rounded-lg h-10 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-300 transition";
+
   return (
     <div className="px-20 pt-6 space-y-8">
-
       {/* 🔥 Course Outcomes */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -36,14 +38,30 @@ export default function AssessmentSetup() {
           </h2>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-          <UTAccordion
-            title={"Course Outcome"}
-            cos={currentSubject.co?.cos}
+        <div className="flex gap-3 items-center">
+          <label htmlFor="target">Target</label>
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={currentSubject?.coTarget}
+            className={inputClass}
           />
+
+          {currentSubject?.coTarget > 0 &&
+            <span className="text-gray-500/60 italic text-sm">
+              <span>Target in marks </span>
+              {currentSubject?.coTarget
+                ? `(${((currentSubject.coTarget * 25) / 100).toFixed(2)}/25)`
+                : "(0/25)"}
+            </span>
+          }
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <UTAccordion title={"Course Outcome"} cos={currentSubject.co?.cos} />
         </div>
       </div>
-      
+
       {/* Project Outcomes */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -54,10 +72,7 @@ export default function AssessmentSetup() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
-          <UTAccordion
-            title={"Project Outcome"}
-            cos={currentSubject.co?.pos}
-          />
+          <UTAccordion title={"Project Outcome"} cos={currentSubject.co?.pos} />
         </div>
       </div>
 
@@ -65,9 +80,7 @@ export default function AssessmentSetup() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 bg-red-500 rounded" />
-          <h2 className="text-lg font-semibold text-gray-800">
-            Assessments
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800">Assessments</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -75,11 +88,7 @@ export default function AssessmentSetup() {
             const assessData = currentSubject?.co?.[a.key];
 
             return (
-              <div
-                key={a.key}
-                className="relative group"
-              >
-
+              <div key={a.key} className="relative group">
                 <SimpleAssessment
                   title={a.title}
                   field={a.key}
@@ -90,7 +99,6 @@ export default function AssessmentSetup() {
           })}
         </div>
       </div>
-
     </div>
   );
 }

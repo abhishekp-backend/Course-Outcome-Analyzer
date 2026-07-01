@@ -13,7 +13,10 @@ export const useSubjects = () => {
   const { subjects, loading, error, isSubjectFetched, isSubjectFetching, isCOFetched, loadingCO } = useSelector((state) => state.subjects);
 
   const fetchAllSubject = async()=>{
-    await dispatch(fetchSubjects())
+    const response = await dispatch(fetchSubjects())
+    if ([401, 403].includes(response?.data?.payload?.status)) {
+      navigate("/");
+    }
   }
 
   const getSubjectInfo = async(id)=>{

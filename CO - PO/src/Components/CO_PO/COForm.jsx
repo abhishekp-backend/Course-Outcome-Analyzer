@@ -26,7 +26,7 @@ export default function COForm({ co, innerDoc }) {
       updateCoPosField({
         classId: location.pathname.split("/").slice(-1),
         "cos._id": { [innerDoc.toString()]: updates },
-      })
+      }),
     );
   };
 
@@ -35,7 +35,6 @@ export default function COForm({ co, innerDoc }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-6">
-
       {/* 🔥 Header */}
       <div className="flex items-center gap-3">
         <div className="w-1.5 h-6 bg-red-500 rounded" />
@@ -46,7 +45,6 @@ export default function COForm({ co, innerDoc }) {
 
       {/* 🔥 Question + Marks */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
         <div className="space-y-2 md:col-span-1">
           <label className="text-sm text-gray-600">Question</label>
           <input
@@ -58,16 +56,30 @@ export default function COForm({ co, innerDoc }) {
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm text-gray-600">Total Marks</label>
-          <input
-            type="number"
-            className={inputClass}
-            value={localCo.totalMarks}
-            onChange={(e) =>
-              handleChange("totalMarks", Number(e.target.value))
-            }
-          />
+        <div className="flex gap-3">
+          <div className="space-y-2">
+            <label className="text-sm text-gray-600">Total Marks</label>
+            <input
+              type="number"
+              className={inputClass}
+              value={localCo.totalMarks}
+              onChange={(e) =>
+                handleChange("totalMarks", Number(e.target.value))
+              }
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-gray-600">Target (%)</label>
+            <input
+              type="number"
+              className={inputClass}
+              value={localCo?.target}
+              onChange={(e) =>
+                handleChange("target", Number(e.target.value))
+              }
+            />
+          </div>
         </div>
       </div>
 
@@ -80,16 +92,12 @@ export default function COForm({ co, innerDoc }) {
         <div className="grid grid-cols-3 gap-4">
           {["t1", "t2", "t3"].map((key, i) => (
             <div key={key} className="space-y-1">
-              <label className="text-xs text-gray-500">
-                Level {i + 1}
-              </label>
+              <label className="text-xs text-gray-500">Level {i + 1}</label>
               <input
                 type="number"
                 className={inputClass}
                 value={localCo[key] || ""}
-                onChange={(e) =>
-                  handleChange(key, Number(e.target.value))
-                }
+                onChange={(e) => handleChange(key, Number(e.target.value))}
               />
             </div>
           ))}
@@ -98,7 +106,6 @@ export default function COForm({ co, innerDoc }) {
 
       {/* 🔥 Topic + BT Level */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-
         <div className="space-y-2">
           <label className="text-sm text-gray-600">Topic</label>
           <input
@@ -115,9 +122,7 @@ export default function COForm({ co, innerDoc }) {
           <select
             className={inputClass}
             value={localCo.btLevel}
-            onChange={(e) =>
-              handleChange("btLevel", Number(e.target.value))
-            }
+            onChange={(e) => handleChange("btLevel", Number(e.target.value))}
           >
             <option value="" disabled>
               Select BT Level
@@ -129,7 +134,6 @@ export default function COForm({ co, innerDoc }) {
             ))}
           </select>
         </div>
-
       </div>
     </div>
   );

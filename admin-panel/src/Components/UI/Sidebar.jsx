@@ -15,7 +15,6 @@ export default function Sidebar({ active }) {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Subjects", path: "/dashboard/subjects" },
     { name: "Faculty", path: "/dashboard/faculty" },
-    { name: "Students", path: "/dashboard/students" },
     { name: "Academic Years", path: "/dashboard/academic-years" },
     { name: "Branches", path: "/dashboard/branches" },
     { name: "Sections", path: "/dashboard/classes" },
@@ -49,10 +48,10 @@ export default function Sidebar({ active }) {
         {menuItems.map((item) => (
           <button
             key={item.name}
-            className={`w-full text-left px-4 py-2 rounded transition ${
+            className={`w-full cursor-pointer text-left px-4 py-2 rounded transition ${
               active === item.path || active === item.path + "/"
-                ? "bg-red-600 text-white"
-                : "hover:bg-red-100 text-gray-800"
+                ? "bg-red-600/80 text-white"
+                : "hover:bg-red-200 text-gray-800"
             }`}
             onClick={() => navigate(item.path)}
           >

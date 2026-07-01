@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from "../reqURL"
+import { useActionData } from 'react-router-dom';
 
 // JWT utility functions
 const isTokenExpired = (token) => {
@@ -83,7 +84,7 @@ export const loginUser = createAsyncThunk(
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async () => {
-    clearAuthData();
+    await api.post("/api/auth/logout")
     return null;
   }
 );
@@ -94,6 +95,7 @@ export const checkAuthStatus = createAsyncThunk(
     try {
       // Verify JWT token with backend
       const state = getState();
+
       if (state.auth.isAuthenticated) {
         return true;
       }

@@ -370,6 +370,11 @@ exports.uploadStudents = [
           ordered: true,
         });
 
+        await section.updateOne(
+          { _id: new mongoose.Types.ObjectId(classId) },
+          { noOfStudents: studentInfos.length },
+        );
+
         await marks.insertMany(studentMarks, {
           session,
           ordered: true,

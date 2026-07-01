@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 function Dashboard({ isSearched, setSearched }) {
   const { subjects, fetchAllSubject, isSubjectFetched, isSubjectFetching } =
     useSubjects();
-  const { updateMarks } = useStudents();
+  // const { updateMarks } = useStudents();
 
   const [showForm, setForm] = useState(false);
   const [isChanged, setChanged] = useState(false);
@@ -21,7 +21,6 @@ function Dashboard({ isSearched, setSearched }) {
 
   useEffect(() => {
     if (!isSubjectFetched && !isSubjectFetching) {
-      console.log("Fetching subjects!");
       fetchAllSubject();
     }
   }, []);
@@ -34,7 +33,7 @@ function Dashboard({ isSearched, setSearched }) {
   }, [successMessage]);
 
   const handleSubjectAdded = () => {
-    seSuccessMessage("Subject added successfully");
+    setSuccessMessage("Subject added successfully");
     setForm(false);
     dispatch(fetchAllSubject());
   };

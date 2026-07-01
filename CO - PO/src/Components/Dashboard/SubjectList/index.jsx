@@ -122,7 +122,7 @@ function SubjectList({ subjects, isFetching }) {
                       <td className="px-6 py-5 text-center align-middle">
                         <div>
                           <p className="text-lg font-bold text-gray-800/90">
-                            {subject?.students || 0}
+                            {subject?.noOfStudents || 0}
                           </p>
                           <p className="text-xs text-gray-500">Students</p>
                         </div>

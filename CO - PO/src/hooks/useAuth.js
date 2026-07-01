@@ -5,9 +5,11 @@ import {
   checkAuthStatus,
   clearError,
 } from "../store/slices/authSlice";
+import { useNavigate } from "react-router-dom";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user, token, isAuthenticated, loading, error, isAuthenticating } =
     useSelector((state) => state.auth);
 
@@ -16,7 +18,8 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    return dispatch(logoutUser());
+    dispatch(logoutUser());
+    navigate("/");
   };
 
   const checkAuth = async () => {

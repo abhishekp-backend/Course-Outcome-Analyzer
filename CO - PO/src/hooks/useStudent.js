@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   addStudent,
@@ -16,9 +15,12 @@ export const useStudents = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { students, loading, error } = useSelector((state) => state.students);
+  const { students, loading, error, fetched } = useSelector((state) => state.students);
 
   const fetchStudentsOfSubject = async({classId})=>{
+    if (fetched) {
+      return students;
+    }
     const response = await dispatch(fetchStudentsBySubject({classId, }));
     if ([401, 403].includes(response?.data?.payload?.status)) {
       navigate("/");

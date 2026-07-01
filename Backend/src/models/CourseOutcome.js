@@ -43,6 +43,7 @@ const CourseOutcomeSchema = new mongoose.Schema(
           t3: Number,
           btLevel: Number,
           topic: String,
+          target: Number,
         },
       ],
       default: () => [
@@ -50,9 +51,6 @@ const CourseOutcomeSchema = new mongoose.Schema(
           name: "CO1",
           question: "",
           totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
           btLevel: 0,
           topic: "",
         },
@@ -60,9 +58,6 @@ const CourseOutcomeSchema = new mongoose.Schema(
           name: "CO2",
           question: "",
           totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
           btLevel: 0,
           topic: "",
         },
@@ -70,9 +65,6 @@ const CourseOutcomeSchema = new mongoose.Schema(
           name: "CO3",
           question: "",
           totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
           btLevel: 0,
           topic: "",
         },
@@ -80,9 +72,6 @@ const CourseOutcomeSchema = new mongoose.Schema(
           name: "CO4",
           question: "",
           totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
           btLevel: 0,
           topic: "",
         },
@@ -90,9 +79,6 @@ const CourseOutcomeSchema = new mongoose.Schema(
           name: "CO5",
           question: "",
           totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
           btLevel: 0,
           topic: "",
         },
@@ -100,13 +86,28 @@ const CourseOutcomeSchema = new mongoose.Schema(
           name: "CO6",
           question: "",
           totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
           btLevel: 0,
           topic: "",
         },
       ],
+    },
+    coTarget: {
+      type: Number,
+      min: 1,
+      max: 99,
+      default: 40,
+    },
+    coLevels: {
+      type: {
+        t1: Number,
+        t2: Number,
+        t3: Number,
+      },
+      default: {
+        t1: 80,
+        t2: 60,
+        t3: 40,
+      }
     },
 
     // ===== POs =====
@@ -199,22 +200,22 @@ const CourseOutcomeSchema = new mongoose.Schema(
     // ===== Assessments (pure JSON objects) =====
     internalAssessment: {
       type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0 }),
+      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
     },
 
     practicals: {
       type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0 }),
+      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
     },
 
     pbls: {
       type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0 }),
+      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
     },
 
     attendance: {
       type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0 }),
+      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
     },
   },
   { timestamps: true },

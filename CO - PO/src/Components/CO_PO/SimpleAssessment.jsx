@@ -5,10 +5,10 @@ import { useLocation } from "react-router-dom";
 
 export default function SimpleAssessment({ title, field, thresholds }) {
   const [sa, setSA] = useState({
-    totalMarks: thresholds?.totalMarks || 0,
-    t1: thresholds?.t1 || 0,
-    t2: thresholds?.t2 || 0,
-    t3: thresholds?.t3 || 0,
+    totalMarks: thresholds?.totalMarks || "",
+    t1: thresholds?.t1 || "",
+    t2: thresholds?.t2 || "",
+    t3: thresholds?.t3 || "",
   });
 
   const dispatch = useDispatch();
@@ -34,18 +34,22 @@ export default function SimpleAssessment({ title, field, thresholds }) {
       </div>
 
       {/* 🔥 Total Marks (converted to same structure style) */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-600">Total Marks</label>
-        <input
-          type="number"
-          className={inputClass}
-          value={sa.totalMarks}
-          onChange={(e) => {
-            const val = Number(e.target.value);
-            setSA({ ...sa, totalMarks: val });
-            changeSAData("totalMarks", val);
-          }}
-        />
+      <div className="space-y-2 flex gap-3">
+        <div>
+          <label className="text-sm font-medium text-gray-600">
+            Total Marks
+          </label>
+          <input
+            type="number"
+            className={inputClass}
+            value={sa.totalMarks}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setSA({ ...sa, totalMarks: val });
+              changeSAData("totalMarks", val);
+            }}
+          />
+        </div>
       </div>
 
       {/* 🔥 Threshold Section */}

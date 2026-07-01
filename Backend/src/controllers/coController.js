@@ -353,48 +353,109 @@ exports.deleteCO = async (req, res) => {
 // };
 
 exports.calculateCOAttainment = async (req, res) => {
-  const { classId } = req.params;
-  const marks = await StudentMarks.find({ class: classId });
-  const cos = await CourseOutcome.findOne({ classId });
-  const dbFields = Array.from({ length: 6 }, (_, i) => `ut1co${i + 1}`);
-  let lv1 = 0,
-    lv2 = 0,
-    lv3 = 0;
-  const mappings = marks.map((student) => {
-    const result = {};
+  try {
+    const { classId } = req.params;
 
-    for (let field of dbFields) {
-      const index = Number(field.at(-1)); // assuming co1, co2, etc.
-      const score = student[field];
-      const thresholds = cos.cos[index - 1];
-      result[field] =
-        score >= thresholds.t1
-          ? 3
-          : score >= thresholds.t2
-            ? 2
-            : score >= thresholds.t3
-              ? 1
-              : 0;
-      if (score >= thresholds.t1) {
-        lv1++;
-      } else if (score >= thresholds.t2) {
-        lv2++;
-      } else if (score >= thresholds.t3) {
-        lv3++;
-      }
+    const marks = await StudentMarks.find({ class: classId });
+    const coDoc = await CourseOutcome.findOne({ classId });
+
+    if (!coDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "Course Outcome document not found.",
+      });
     }
 
-    return result;
-  });
+    const dbFields = [
+      "ut1co1",
+      "ut1co2",
+      "ut1co3",
+      "ut2co4",
+      "ut2co5",
+      "ut2co6",
+    ];
 
-  return res.status(200).json({ mappings, lv1, lv2, lv3 });
+    const attainment = {};
+
+    // Initialize statistics for each CO
+    dbFields.forEach((field, index) => {
+      attainment[field] = {
+        target: coDoc.coTarget,
+        total: coDoc.cos[index].totalMarks,
+        achieved: 0,
+        totalStudents: marks.length,
+        attainmentPercentage: 0,
+        level: 0,
+      };
+    });
+
+    // Count students achieving the target
+    for (const student of marks) {
+      dbFields.forEach((field) => {
+        const score = student[field] ?? 0;
+        const total = attainment[field].total;
+
+        if (total <= 0) return;
+
+        const percentage = (score / total) * 100;
+
+        if (percentage >= coDoc.coTarget) {
+          attainment[field].achieved++;
+        }
+      });
+    }
+
+    let level1 = 0;
+    let level2 = 0;
+    let level3 = 0;
+
+    // Calculate attainment percentage and assign level
+    dbFields.forEach((field) => {
+      const data = attainment[field];
+
+      data.attainmentPercentage =
+        data.totalStudents === 0
+          ? 0
+          : Number(
+              ((data.achieved / data.totalStudents) * 100).toFixed(2)
+            );
+
+      if (data.attainmentPercentage >= coDoc.coLevels.t1) {
+        data.level = 3;
+        level3++;
+      } else if (data.attainmentPercentage >= coDoc.coLevels.t2) {
+        data.level = 2;
+        level2++;
+      } else if (data.attainmentPercentage >= coDoc.coLevels.t3) {
+        data.level = 1;
+        level1++;
+      } else {
+        data.level = 0;
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      attainment,
+      summary: {
+        level1,
+        level2,
+        level3,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
 
 exports.calculateCOAttainmentTW = async (req, res) => {
   const { classId } = req.params;
 
   const marks = await StudentMarks.find({ class: classId });
-  const record = await YourModel.findOne({ classId });
+  const record = await CourseOutcome.findOne({ classId });
   const cos = record.cos;
 
   const dbFields = Object.keys(record.tw || {}); // keep TW-driven loop

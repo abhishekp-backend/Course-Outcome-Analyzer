@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import COForm from "./COForm";
 import { MdArrowDropDown } from "react-icons/md";
 
-export default function UTAccordion({ title, cos }) {
+export default function UTAccordion({ cos }) {
   const [openCO, setOpenCO] = useState(null);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl overflow-hidden">
 
       {/* 🔥 Accordion body */}   
       <div className="p-3 space-y-2">

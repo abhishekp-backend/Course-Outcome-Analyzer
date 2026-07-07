@@ -83,27 +83,6 @@ export default function COForm({ co, innerDoc }) {
         </div>
       </div>
 
-      {/* 🔥 Thresholds */}
-      <div className="space-y-3">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-          Threshold Levels
-        </p>
-
-        <div className="grid grid-cols-3 gap-4">
-          {["t1", "t2", "t3"].map((key, i) => (
-            <div key={key} className="space-y-1">
-              <label className="text-xs text-gray-500">Level {i + 1}</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={localCo[key] || ""}
-                onChange={(e) => handleChange(key, Number(e.target.value))}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* 🔥 Topic + BT Level */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
         <div className="space-y-2">

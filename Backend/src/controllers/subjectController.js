@@ -39,7 +39,7 @@ exports.getUserSubjects = async (req, res) => {
           name: "$subject.name",
           branch: "$branch.branchName",
           academicId: "$subject.academicYear",
-          lastUpdated: "$subject.updatedAt",
+          updatedAt: 1,
           noOfStudents: 1,
         },
       },

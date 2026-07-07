@@ -74,7 +74,7 @@ function SubjectList({ subjects, isFetching }) {
                     </div>
                   </th>
 
-                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
                     <div className="flex items-center justify-center gap-2">
                       <RxUpdate size={16} />
                       Last Updated
@@ -85,9 +85,20 @@ function SubjectList({ subjects, isFetching }) {
 
               <tbody className="divide-y divide-gray-100">
                 {subjects.map((subject, index) => {
-                  const splittedTime = subject?.lastUpdated.split("T");
-                  const date = splittedTime[0];
-                  const time = splittedTime[1];
+                  const updatedAt = new Date(subject.updatedAt);
+
+                  const date = updatedAt.toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  });
+
+                  const time = updatedAt.toLocaleTimeString("en-IN", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true,
+                  });
 
                   return (
                     <tr
@@ -141,10 +152,10 @@ function SubjectList({ subjects, isFetching }) {
                       </td>
 
                       <td className="px-6 py-5 align-middle">
-                        <p className="font-medium text-gray-700">{date}</p>
-                        <p className="mt-1 text-xs text-gray-500">
-                          {time?.slice(0, time.length - 1).split(".")[0]}
-                        </p>
+                        <div className="flex flex-col items-center">
+                          <p className="font-medium text-gray-700">{date}</p>
+                          <p className="mt-1 text-xs text-gray-500">{time}</p>
+                        </div>
                       </td>
                     </tr>
                   );

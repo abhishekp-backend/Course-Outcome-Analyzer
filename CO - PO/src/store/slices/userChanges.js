@@ -8,8 +8,11 @@ This slice will track all Subject and Course Outcome data changes by FIELDS and 
 const initialState = {
   coPos: {
     cos: [],
+    values: {},
   },
   assess: {},
+  error: "",
+  classId: null,
   // {subjectId, arrayDocId, values}
 };
 
@@ -23,10 +26,13 @@ export const updateCOPO = createAsyncThunk(
         assess: userChanges.assess,
         classId: userChanges.classId,
         tws: userChanges?.tws,
+        values: userChanges?.coPos?.values,
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.message || "Something went wrong!");
+      return rejectWithValue(
+        error.response?.data?.message || "Something went wrong!",
+      );
     }
   },
 );
@@ -55,6 +61,28 @@ const userChanges = createSlice({
       }
       state.classId = action.payload.classId[0];
     },
+
+    updateCOValues(state, action) {
+      const { classId, field, value } = action.payload;
+
+      state.classId = classId;
+
+      if (!state.coPos.values) {
+        state.coPos.values = {};
+      }
+
+      if (field === "target") {
+        state.coPos.values.target = value;
+        return;
+      }
+
+      if (!state.coPos.values.levels) {
+        state.coPos.values.levels = {};
+      }
+
+      state.coPos.values.levels[field] = value;
+    },
+
     updateSAField(state, action) {
       const { updates, classId } = action.payload;
       state.classId = classId;
@@ -77,8 +105,7 @@ const userChanges = createSlice({
       for (const key in updates) {
         if (key !== "tws") {
           state.assess.tw[key] = updates[key];
-        }
-        else {
+        } else {
           state.assess.tws = updates["tws"];
         }
       }
@@ -96,6 +123,7 @@ const userChanges = createSlice({
       .addCase(updateCOPO.fulfilled, (state) => {
         state.savingData = false;
         clearCos(state);
+        state.classId = null;
       })
       .addCase(updateCOPO.rejected, (state) => {
         state.savingData = false;
@@ -110,5 +138,6 @@ export const {
   clearCos,
   updateSAField,
   updateTWField,
+  updateCOValues,
 } = userChanges.actions;
 export default userChanges.reducer;

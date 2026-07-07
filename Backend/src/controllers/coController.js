@@ -64,7 +64,7 @@ exports.getCOsBySubject = async (req, res) => {
 // Update a CO
 exports.updateCO = async (req, res) => {
   try {
-    let { classId, cos, assess } = req.body;
+    let { classId, cos, values, assess } = req.body;
 
     // -----------------------------
     // 1. Validate classId
@@ -72,7 +72,7 @@ exports.updateCO = async (req, res) => {
     if (!classId) {
       return res.status(400).json({
         success: false,
-        message: "classId is required",
+        message: "Update any data first!",
       });
     }
 
@@ -94,17 +94,16 @@ exports.updateCO = async (req, res) => {
 
         const coObjId = new mongoose.Types.ObjectId(_id);
 
-        // Update COS
+        // Update Course Outcomes
         for (const key in fields) {
           setQuery[`cos.$[${alias}].${key}`] = fields[key];
         }
 
-        // Update POS (if they share the same structure/ids)
+        // Update Program Outcomes
         for (const key in fields) {
           setQuery[`pos.$[${alias}].${key}`] = fields[key];
         }
 
-        // Add array filter ONLY ONCE
         arrayFilters.push({
           [`${alias}._id`]: coObjId,
         });
@@ -112,22 +111,40 @@ exports.updateCO = async (req, res) => {
     }
 
     // -----------------------------
-    // 3. TWS update (simple field)
+    // 3. CO Target & CO Levels
     // -----------------------------
-    if (typeof assess.tws === "number") {
+    if (values && typeof values === "object") {
+      if (values.target !== undefined) {
+        setQuery["coTarget"] = values.target;
+      }
+
+      if (values.levels && typeof values.levels === "object") {
+        for (const key in values.levels) {
+          setQuery[`coLevels.${key}`] = values.levels[key];
+        }
+      }
+    }
+
+    console.log("Query: ", setQuery);
+
+    // -----------------------------
+    // 4. TWS update
+    // -----------------------------
+    if (typeof assess?.tws === "number") {
       setQuery["tws"] = assess.tws;
     }
 
     // -----------------------------
-    // 4. ASSESS updates (flat object)
+    // 5. Assessment updates
     // -----------------------------
-    if (assess && typeof assess === "object") {
-      for (const key in assess?.tw) {
-        setQuery[`tw.${key}`] = assess?.tw[key];
+    if (assess?.tw && typeof assess.tw === "object") {
+      for (const key in assess.tw) {
+        setQuery[`tw.${key}`] = assess.tw[key];
       }
     }
+
     // -----------------------------
-    // 5. Guard: nothing to update
+    // 6. Guard: nothing to update
     // -----------------------------
     if (Object.keys(setQuery).length === 0) {
       return res.status(400).json({
@@ -137,7 +154,7 @@ exports.updateCO = async (req, res) => {
     }
 
     // -----------------------------
-    // 6. Execute update
+    // 7. Execute update
     // -----------------------------
     await CourseOutcome.updateMany(
       { classId: classObjId },
@@ -154,6 +171,7 @@ exports.updateCO = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -416,9 +434,12 @@ exports.calculateCOAttainment = async (req, res) => {
       data.attainmentPercentage =
         data.totalStudents === 0
           ? 0
-          : Number(
-              ((data.achieved / data.totalStudents) * 100).toFixed(2)
-            );
+          : Number(((data.achieved / data.totalStudents) * 100).toFixed(2));
+
+      console.log("Attainment: ", data?.attainmentPercentage);
+      console.log("L1: ", coDoc?.coLevels?.t1);
+      console.log("L2: ", coDoc?.coLevels?.t2);
+      console.log("L3: ", coDoc?.coLevels?.t3);
 
       if (data.attainmentPercentage >= coDoc.coLevels.t1) {
         data.level = 3;

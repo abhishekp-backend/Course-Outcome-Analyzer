@@ -40,7 +40,6 @@ function StudentList({ students, deleteStudent, setChange }) {
   // Flatten students with performance first
   const formattedStudents = students.map((student) => {
     const perf = student.performance?.[0] || {}; // take first element from performance array
-
     return {
       roll: student.roll,
       name: student.name,
@@ -53,9 +52,9 @@ function StudentList({ students, deleteStudent, setChange }) {
       },
       // UT2 COs
       ut2: {
-        co1: perf.ut2co1 ?? 0,
-        co2: perf.ut2co2 ?? 0,
-        co3: perf.ut2co3 ?? 0,
+        co4: perf.ut2co4 ?? 0,
+        co5: perf.ut2co5 ?? 0,
+        co6: perf.ut2co6 ?? 0,
       },
       // Other marks
       ia: perf.ia ?? 0,
@@ -128,7 +127,7 @@ function StudentList({ students, deleteStudent, setChange }) {
               </td>
 
               {/* UT2 inputs */}
-              {["co1", "co2", "co3"].map((co) => (
+              {["co4", "co5", "co6"].map((co) => (
                 <td key={`ut2-${co}`} className="px-3 py-4 text-center">
                   <input
                     type="number"
@@ -144,7 +143,7 @@ function StudentList({ students, deleteStudent, setChange }) {
               ))}
 
               <td className="px-3 py-4 text-center text-sm font-medium text-gray-600 bg-gray-50">
-                {["co1", "co2", "co3"].reduce((sum, co) => sum + (localMarks[student.prn]?.ut2?.[co] ?? student.ut2[co]), 0)}
+                {["co4", "co5", "co6"].reduce((sum, co) => sum + (localMarks[student.prn]?.ut2?.[co] ?? student.ut2[co]), 0)}
               </td>
 
               {/* Simple marks */}

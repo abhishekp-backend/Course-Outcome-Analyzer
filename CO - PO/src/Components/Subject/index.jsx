@@ -13,6 +13,7 @@ import CO_PO_Mapping from "../CO_PO/CO_PO_Mapping";
 import TermWorkManagement from "../CO_PO/TermWorkManagement";
 
 import { updateCOPO } from "../../store/slices/userChanges";
+import toast from "react-hot-toast";
 
 export function SubjectInfo() {
   const { id } = useParams();
@@ -32,7 +33,7 @@ export function SubjectInfo() {
 
   const { currentSubject } = useSelector((state) => state.subjects);
   const { students } = useSelector((state) => state.students);
-  const { coPos } = useSelector((state) => state.userChanges);
+  const { coPos, classId } = useSelector((state) => state.userChanges);
 
   useEffect(() => {
     if (!loadingCO) fetchCO(id);
@@ -54,6 +55,15 @@ export function SubjectInfo() {
     }
   }, [activeTab]);
 
+  const saveChanges = async () => {
+    try {
+      await dispatch(updateCOPO()).unwrap();
+      toast.success("Saved changes!");
+    } catch (err) {
+      toast.error(err);
+    }
+  };
+
   return (
     <div className="px-20 pt-10 space-y-6">
       <div className="flex items-center gap-4">
@@ -69,10 +79,11 @@ export function SubjectInfo() {
             subjects.find((s) => s._id === id)?.name ||
             "Loading..."}
         </h1>
+        {console.log(classId)}
 
         <button
-          onClick={() => dispatch(updateCOPO())}
-          disabled={coPos.finder || Object.keys(coPos).length === 0}
+          onClick={saveChanges}
+          disabled={classId == null || classId === undefined || coPos.finder || Object.keys(coPos).length === 0}
           className="ml-auto bg-green-600 hover:bg-green-700 text-white px-4 h-10 rounded-lg shadow-sm disabled:opacity-50"
         >
           Save
@@ -83,9 +94,12 @@ export function SubjectInfo() {
         <div className="flex gap-6 border-b border-gray-100">
           {[
             { key: "co", label: "Course Outcomes" },
-            { key: "marks", label: "Marks" },
+            // { key: "marks", label: "PBL/Assignments COs" },
+            // { key: "marks", label: "Oral COs" },
+            // { key: "marks", label: "UT COs" },
+            { key: "marks", label: "COs" },
             { key: "experiments", label: "TW COs" },
-            { key: "mapping", label: "CO-PO Mapping" },
+            { key: "mapping", label: "COs Attainment" },
           ].map((t) => (
             <button
               key={t.key}
@@ -105,7 +119,6 @@ export function SubjectInfo() {
       <div className="bg-white rounded-xl h-full shadow-sm p-5">
         {activeTab === "marks" && (
           <>
-
             {students.length === 0 ? (
               <div className="flex p-10 rounded-lg bg-gray-50">
                 <MarksUploadSection subjectId={id} />
@@ -124,10 +137,7 @@ export function SubjectInfo() {
         {activeTab === "co" && <AssessmentSetup subjectId={id} />}
 
         {activeTab === "experiments" && (
-          <TermWorkManagement
-            subjectId={id}
-            termWorks={currentSubject?.co}
-          />
+          <TermWorkManagement subjectId={id} termWorks={currentSubject?.co} />
         )}
 
         {activeTab === "mapping" && <CO_PO_Mapping subjectId={id} />}

@@ -101,7 +101,7 @@ function TermWork({ twIndex }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-800">
-          Term Work {twIndex}
+          Experiment {twIndex}
         </h3>
 
         <div className="flex items-center gap-2">

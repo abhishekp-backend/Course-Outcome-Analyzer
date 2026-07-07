@@ -1,25 +1,45 @@
 const mongoose = require("mongoose");
+const section = require("./Class");
+const subject = require("./Subject");
 
-const schemaFields = {};
+// -----------------------------
+// Term Work dynamic fields
+// -----------------------------
+const twSchemaFields = {};
 
 for (let i = 1; i <= 10; i++) {
-  for (let j = 1; j <= 3; j++) {
-    schemaFields[`tw${i}co${j}`] = {
-      type: Number,
-      min: 0,
-      max: 100,
-      default: 0,
-    };
-  }
-}
+  twSchemaFields[`tw${i}`] = {
+    type: {
+      co1: { type: Number, min: 0, max: 100, default: 0 },
+      co2: { type: Number, min: 0, max: 100, default: 0 },
+      co3: { type: Number, min: 0, max: 100, default: 0 },
+    },
+    default: () => ({
+      co1: 0,
+      co2: 0,
+      co3: 0,
+    }),
+  };
 
-// NEW: string fields inside same tw object
-for (let i = 1; i <= 10; i++) {
-  schemaFields[`tw${i}co`] = {
+  twSchemaFields[`tw${i}Label`] = {
     type: String,
     default: "",
   };
 }
+
+// -----------------------------
+// CO / PO base template (reused)
+// -----------------------------
+const assessmentItem = {
+  name: String,
+  question: String,
+  totalMarks: { type: Number, default: 0 },
+  t1: { type: Number, default: 0 },
+  t2: { type: Number, default: 0 },
+  t3: { type: Number, default: 0 },
+  btLevel: { type: Number, default: 0 },
+  topic: { type: String, default: "" },
+};
 
 const CourseOutcomeSchema = new mongoose.Schema(
   {
@@ -31,102 +51,45 @@ const CourseOutcomeSchema = new mongoose.Schema(
       index: true,
     },
 
-    // ===== COs =====
+    // -----------------------------
+    // COs
+    // -----------------------------
     cos: {
-      type: [
-        {
-          name: String,
-          question: String,
-          totalMarks: Number,
-          t1: Number,
-          t2: Number,
-          t3: Number,
-          btLevel: Number,
-          topic: String,
-          target: Number,
-        },
-      ],
-      default: () => [
-        {
-          name: "CO1",
+      type: [assessmentItem],
+      default: () =>
+        Array.from({ length: 6 }, (_, i) => ({
+          name: `CO${i + 1}`,
           question: "",
           totalMarks: 0,
+          t1: 0,
+          t2: 0,
+          t3: 0,
           btLevel: 0,
           topic: "",
-        },
-        {
-          name: "CO2",
-          question: "",
-          totalMarks: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "CO3",
-          question: "",
-          totalMarks: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "CO4",
-          question: "",
-          totalMarks: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "CO5",
-          question: "",
-          totalMarks: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "CO6",
-          question: "",
-          totalMarks: 0,
-          btLevel: 0,
-          topic: "",
-        },
-      ],
+        })),
     },
+
     coTarget: {
       type: Number,
       min: 1,
-      max: 99,
+      max: 100,
       default: 40,
     },
+
     coLevels: {
-      type: {
-        t1: Number,
-        t2: Number,
-        t3: Number,
-      },
-      default: {
-        t1: 80,
-        t2: 60,
-        t3: 40,
-      }
+      t1: { type: Number, default: 80 },
+      t2: { type: Number, default: 60 },
+      t3: { type: Number, default: 40 },
     },
 
-    // ===== POs =====
+    // -----------------------------
+    // POs
+    // -----------------------------
     pos: {
-      type: [
-        {
-          name: String,
-          question: String,
-          totalMarks: Number,
-          t1: Number,
-          t2: Number,
-          t3: Number,
-          btLevel: Number,
-          topic: String,
-        },
-      ],
-      default: () => [
-        {
-          name: "PO1",
+      type: [assessmentItem],
+      default: () =>
+        Array.from({ length: 6 }, (_, i) => ({
+          name: `PO${i + 1}`,
           question: "",
           totalMarks: 0,
           t1: 0,
@@ -134,62 +97,14 @@ const CourseOutcomeSchema = new mongoose.Schema(
           t3: 0,
           btLevel: 0,
           topic: "",
-        },
-        {
-          name: "PO2",
-          question: "",
-          totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "PO3",
-          question: "",
-          totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "PO4",
-          question: "",
-          totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "PO5",
-          question: "",
-          totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
-          btLevel: 0,
-          topic: "",
-        },
-        {
-          name: "PO6",
-          question: "",
-          totalMarks: 0,
-          t1: 0,
-          t2: 0,
-          t3: 0,
-          btLevel: 0,
-          topic: "",
-        },
-      ],
+        })),
     },
 
+    // -----------------------------
     // Term Work
-    tw: schemaFields,
+    // -----------------------------
+    tw: twSchemaFields,
+
     tws: {
       type: Number,
       min: 0,
@@ -197,28 +112,76 @@ const CourseOutcomeSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // ===== Assessments (pure JSON objects) =====
+    // -----------------------------
+    // Assessments
+    // -----------------------------
     internalAssessment: {
-      type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
+      totalMarks: { type: Number, default: 0 },
+      t1: { type: Number, default: 0 },
+      t2: { type: Number, default: 0 },
+      t3: { type: Number, default: 0 },
+      target: { type: Number, default: 0 },
     },
 
     practicals: {
-      type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
+      totalMarks: { type: Number, default: 0 },
+      t1: { type: Number, default: 0 },
+      t2: { type: Number, default: 0 },
+      t3: { type: Number, default: 0 },
+      target: { type: Number, default: 0 },
     },
 
     pbls: {
-      type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
+      totalMarks: { type: Number, default: 0 },
+      t1: { type: Number, default: 0 },
+      t2: { type: Number, default: 0 },
+      t3: { type: Number, default: 0 },
+      target: { type: Number, default: 0 },
     },
 
     attendance: {
-      type: mongoose.Schema.Types.Mixed,
-      default: () => ({ totalMarks: 0, t1: 0, t2: 0, t3: 0, target: 0 }),
+      totalMarks: { type: Number, default: 0 },
+      t1: { type: Number, default: 0 },
+      t2: { type: Number, default: 0 },
+      t3: { type: Number, default: 0 },
+      target: { type: Number, default: 0 },
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  }
+);
+
+CourseOutcomeSchema.post(
+  ["updateOne", "findOneAndUpdate", "updateMany"],
+  async function () {
+    try {
+      const filter = this.getFilter();
+
+      if (!filter.classId) return;
+
+      await section.findByIdAndUpdate(
+        filter.classId,
+        { updatedAt: new Date() }
+      );
+
+      const cls = await section
+        .findById(filter.classId)
+        .select("subject");
+
+      if (!cls) return;
+
+      await subject.findByIdAndUpdate(
+        cls.subject,
+        { updatedAt: new Date() }
+      );
+    } catch (err) {
+      console.error(
+        "Failed to propagate updatedAt:",
+        err
+      );
+    }
+  }
 );
 
 module.exports = mongoose.model("CourseOutcome", CourseOutcomeSchema);

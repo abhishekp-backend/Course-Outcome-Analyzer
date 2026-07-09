@@ -279,8 +279,9 @@ exports.uploadStudents = [
         });
       }
 
-      let { id, academicId, classId } = req.body;
+      let { id, academicId } = req.body;
       id = JSON.parse(id);
+      const classId = id.classId;
 
       const workbook = xlsx.read(req.file.buffer, {
         type: "buffer",
@@ -289,6 +290,40 @@ exports.uploadStudents = [
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const rows = xlsx.utils.sheet_to_json(sheet);
+
+      /* --------------------- Check Existing PRNs --------------------- */
+
+      const excelPRNs = rows.map((row) => row.PRN);
+
+      const existingStudents = await Student.find(
+        {
+          prn: { $in: excelPRNs },
+        },
+        {
+          prn: 1,
+          _id: 0,
+        },
+      );
+
+      const existingPRNs = new Set(
+        existingStudents.map((student) => student.prn),
+      );
+
+      const validRows = rows.filter((row) => !existingPRNs.has(row.PRN.toString()));
+
+      const duplicatePRNs = rows
+        .filter((row) => existingPRNs.has(row.PRN))
+        .map((row) => row.PRN);
+
+      if (validRows.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "All uploaded students already exist.",
+          duplicatePRNs,
+        });
+      }
+
+      /* --------------------- Fetch Required Documents --------------------- */
 
       const branchDoc = await branch.findOne(
         { branchName: id.branch },
@@ -322,7 +357,9 @@ exports.uploadStudents = [
         });
       }
 
-      const studentInfos = rows.map((row) => ({
+      /* --------------------- Build Documents --------------------- */
+
+      const studentInfos = validRows.map((row) => ({
         name: row.Name,
         prn: row.PRN,
         roll: row.Roll,
@@ -333,58 +370,71 @@ exports.uploadStudents = [
         class: classId,
       }));
 
-      const studentMarks = rows.map((row) => ({
-        prn: row.PRN,
-        subject: subjectDoc._id,
-        class: classId,
+      // const studentMarks = validRows.map((row) => ({
+      //   prn: row.PRN,
+      //   subject: subjectDoc._id,
+      //   class: classId,
 
-        ut1co1: Number(row["UT1-CO1"] || 0),
-        ut1co2: Number(row["UT1-CO2"] || 0),
-        ut1co3: Number(row["UT1-CO3"] || 0),
-        ut1co4: Number(row["UT1-CO4"] || 0),
-        ut1co5: Number(row["UT1-CO5"] || 0),
-        ut1co6: Number(row["UT1-CO6"] || 0),
+      //   ut1co1: Number(row["UT1-CO1"] || 0),
+      //   ut1co2: Number(row["UT1-CO2"] || 0),
+      //   ut1co3: Number(row["UT1-CO3"] || 0),
+      //   ut1co4: Number(row["UT1-CO4"] || 0),
+      //   ut1co5: Number(row["UT1-CO5"] || 0),
+      //   ut1co6: Number(row["UT1-CO6"] || 0),
 
-        ut2co1: Number(row["UT2-CO1"] || 0),
-        ut2co2: Number(row["UT2-CO2"] || 0),
-        ut2co3: Number(row["UT2-CO3"] || 0),
-        ut2co4: Number(row["UT2-CO4"] || 0),
-        ut2co5: Number(row["UT2-CO5"] || 0),
-        ut2co6: Number(row["UT2-CO6"] || 0),
+      //   ut2co1: Number(row["UT2-CO1"] || 0),
+      //   ut2co2: Number(row["UT2-CO2"] || 0),
+      //   ut2co3: Number(row["UT2-CO3"] || 0),
+      //   ut2co4: Number(row["UT2-CO4"] || 0),
+      //   ut2co5: Number(row["UT2-CO5"] || 0),
+      //   ut2co6: Number(row["UT2-CO6"] || 0),
 
-        ia: Number(row.IA ?? 0),
-        pbl: Number(row.PBL ?? 0),
-        tw: Number(row.TW ?? 0),
+      //   ia: Number(row.IA ?? 0),
+      //   pbl: Number(row.PBL ?? 0),
+      //   tw: Number(row.TW ?? 0),
 
-        universityExam: Number(
-          row["UniversityExam"] ||
-            row["universityExam"] ||
-            row["University"] ||
-            0,
-        ),
-      }));
+      //   universityExam: Number(
+      //     row["UniversityExam"] ||
+      //       row["universityExam"] ||
+      //       row["University"] ||
+      //       0,
+      //   ),
+      // }));
+
+      /* --------------------- Transaction --------------------- */
 
       await session.withTransaction(async () => {
-        await Student.insertMany(studentInfos, {
-          session,
-          ordered: true,
-        });
+        if (studentInfos.length > 0) {
+          await Student.insertMany(studentInfos, {
+            session,
+            ordered: true,
+          });
 
-        await section.updateOne(
-          { _id: new mongoose.Types.ObjectId(classId) },
-          { noOfStudents: studentInfos.length },
-        );
+          // await marks.insertMany(studentMarks, {
+          //   session,
+          //   ordered: true,
+          // });
 
-        await marks.insertMany(studentMarks, {
-          session,
-          ordered: true,
-        });
+          await section.updateOne(
+            { _id: classId },
+            {
+              $inc: {
+                noOfStudents: studentInfos.length,
+              },
+            },
+            { session },
+          );
+        }
       });
+
+      /* --------------------- Response --------------------- */
 
       return res.status(200).json({
         success: true,
-        message: "Students uploaded successfully",
-        count: studentInfos.length,
+        message: "Students uploaded successfully.",
+        inserted: studentInfos.length,
+        skipped: duplicatePRNs.length,
+        duplicatePRNs,
       });
     } catch (error) {
       console.error(error);

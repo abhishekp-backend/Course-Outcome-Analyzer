@@ -15,6 +15,7 @@ export default function Sidebar({ active }) {
     { name: "Dashboard", path: "/dashboard" },
     { name: "Subjects", path: "/dashboard/subjects" },
     { name: "Faculty", path: "/dashboard/faculty" },
+    { name: "Students", path: "/dashboard/students" },
     { name: "Academic Years", path: "/dashboard/academic-years" },
     { name: "Branches", path: "/dashboard/branches" },
     { name: "Sections", path: "/dashboard/classes" },

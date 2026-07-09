@@ -15,7 +15,6 @@ export const fetchClasses = createAsyncThunk(
       const res = await api.post("/api/class/fetchClasses", {
         ...filter
       });
-      console.log(res)
       return res.data; // array of class objects
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to fetch classes");

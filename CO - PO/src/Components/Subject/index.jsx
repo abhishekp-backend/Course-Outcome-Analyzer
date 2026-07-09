@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 
 import StudentList from "../Student/StudentList";
-import MarksUploadSection from "./MarksUploadSection";
 
 import { useStudents } from "../../hooks/useStudent";
 import { useSubjects } from "../../hooks/useSubjects";
@@ -83,7 +82,12 @@ export function SubjectInfo() {
 
         <button
           onClick={saveChanges}
-          disabled={classId == null || classId === undefined || coPos.finder || Object.keys(coPos).length === 0}
+          disabled={
+            classId == null ||
+            classId === undefined ||
+            coPos.finder ||
+            Object.keys(coPos).length === 0
+          }
           className="ml-auto bg-green-600 hover:bg-green-700 text-white px-4 h-10 rounded-lg shadow-sm disabled:opacity-50"
         >
           Save
@@ -117,22 +121,19 @@ export function SubjectInfo() {
       </div>
 
       <div className="bg-white rounded-xl h-full shadow-sm p-5">
-        {activeTab === "marks" && (
-          <>
-            {students.length === 0 ? (
-              <div className="flex p-10 rounded-lg bg-gray-50">
-                <MarksUploadSection subjectId={id} />
-              </div>
-            ) : (
-              <StudentList
-                students={students}
-                subject={id}
-                deleteStudent={removeStudent}
-                setChange={setChanged}
-              />
-            )}
-          </>
-        )}
+        {activeTab === "marks" &&
+          (students.length === 0 ? (
+            <div className="p-10 text-center text-gray-500">
+              No students available.
+            </div>
+          ) : (
+            <StudentList
+              students={students}
+              subject={id}
+              deleteStudent={removeStudent}
+              setChange={setChanged}
+            />
+          ))}
 
         {activeTab === "co" && <AssessmentSetup subjectId={id} />}
 

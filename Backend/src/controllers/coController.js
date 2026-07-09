@@ -3,6 +3,7 @@ const Class = require("../models/class");
 const CO_PO_Mapping = require("../models/CO_PO_Mapping");
 const StudentMarks = require("../models/studentRecords");
 const Student = require("../models/Student");
+const Section = require("../models/Class");
 const mongoose = require("mongoose");
 
 // Create a new Course Outcome
@@ -125,8 +126,6 @@ exports.updateCO = async (req, res) => {
       }
     }
 
-    console.log("Query: ", setQuery);
-
     // -----------------------------
     // 4. TWS update
     // -----------------------------
@@ -144,7 +143,16 @@ exports.updateCO = async (req, res) => {
     }
 
     // -----------------------------
-    // 6. Guard: nothing to update
+    // 6. Other assessments
+    // -----------------------------
+    if (Object.keys(assess).length > 0) {
+      for (const key in assess) {
+        setQuery[key] = assess[key];
+      }
+    }
+
+    // -----------------------------
+    // 7. Guard: nothing to update
     // -----------------------------
     if (Object.keys(setQuery).length === 0) {
       return res.status(400).json({
@@ -154,7 +162,7 @@ exports.updateCO = async (req, res) => {
     }
 
     // -----------------------------
-    // 7. Execute update
+    // 8. Execute update
     // -----------------------------
     await CourseOutcome.updateMany(
       { classId: classObjId },
@@ -162,6 +170,15 @@ exports.updateCO = async (req, res) => {
       {
         arrayFilters: arrayFilters.length ? arrayFilters : undefined,
         runValidators: true,
+      },
+    );
+
+    await Section.updateOne(
+      {
+        _id: classObjId,
+      },
+      {
+        updatedAt: new Date(),
       },
     );
 
@@ -384,7 +401,7 @@ exports.calculateCOAttainment = async (req, res) => {
       });
     }
 
-    const dbFields = [
+    const coFields = [
       "ut1co1",
       "ut1co2",
       "ut1co3",
@@ -393,11 +410,14 @@ exports.calculateCOAttainment = async (req, res) => {
       "ut2co6",
     ];
 
-    const attainment = {};
+    const assessFields = ["universityExams"];
+
+    const coAttainment = {};
+    const assessAttainment = {};
 
     // Initialize statistics for each CO
-    dbFields.forEach((field, index) => {
-      attainment[field] = {
+    coFields.forEach((field, index) => {
+      coAttainment[field] = {
         target: coDoc.coTarget,
         total: coDoc.cos[index].totalMarks,
         achieved: 0,
@@ -407,18 +427,43 @@ exports.calculateCOAttainment = async (req, res) => {
       };
     });
 
+    // Initialize statistics for each Assessment
+    assessFields.forEach((field, index) => {
+      assessAttainment[field] = {
+        target: coDoc[field].target,
+        total: coDoc[field].totalMarks,
+        achieved: 0,
+        totalStudents: marks.length,
+        attainmentPercentage: 0,
+        level: 0,
+      };
+    });
+
     // Count students achieving the target
     for (const student of marks) {
-      dbFields.forEach((field) => {
+      coFields.forEach((field) => {
         const score = student[field] ?? 0;
-        const total = attainment[field].total;
+        const total = coAttainment[field].total;
 
         if (total <= 0) return;
 
         const percentage = (score / total) * 100;
 
         if (percentage >= coDoc.coTarget) {
-          attainment[field].achieved++;
+          coAttainment[field].achieved++;
+        }
+      });
+
+      assessFields.forEach((field) => {
+        const score = student[field] ?? 0;
+        const total = assessAttainment[field].total;
+
+        if (total <= 0) return;
+
+        const percentage = (score / total) * 100;
+
+        if (percentage >= coDoc[field].target) {
+          assessAttainment[field].achieved++;
         }
       });
     }
@@ -427,19 +472,14 @@ exports.calculateCOAttainment = async (req, res) => {
     let level2 = 0;
     let level3 = 0;
 
-    // Calculate attainment percentage and assign level
-    dbFields.forEach((field) => {
-      const data = attainment[field];
+    // Calculate coAttainment percentage and assign level
+    coFields.forEach((field) => {
+      const data = coAttainment[field];
 
       data.attainmentPercentage =
         data.totalStudents === 0
           ? 0
           : Number(((data.achieved / data.totalStudents) * 100).toFixed(2));
-
-      console.log("Attainment: ", data?.attainmentPercentage);
-      console.log("L1: ", coDoc?.coLevels?.t1);
-      console.log("L2: ", coDoc?.coLevels?.t2);
-      console.log("L3: ", coDoc?.coLevels?.t3);
 
       if (data.attainmentPercentage >= coDoc.coLevels.t1) {
         data.level = 3;
@@ -455,9 +495,33 @@ exports.calculateCOAttainment = async (req, res) => {
       }
     });
 
+    assessFields.forEach((field) => {
+      const data = assessAttainment[field];
+
+      data.attainmentPercentage =
+        data.totalStudents === 0
+          ? 0
+          : Number(((data.achieved / data.totalStudents) * 100).toFixed(2));
+      
+      if (data.attainmentPercentage >= coDoc[field].t1) {
+        data.level = 3;
+        level3++;
+      } else if (data.attainmentPercentage >= coDoc[field].t2) {
+        data.level = 2;
+        level2++;
+      } else if (data.attainmentPercentage >= coDoc[field].t3) {
+        data.level = 1;
+        level1++;
+      }
+      else {
+        data.level = 0;
+      }
+    });
+
     return res.status(200).json({
       success: true,
-      attainment,
+      coAttainment,
+      assessAttainment,
       summary: {
         level1,
         level2,
@@ -479,7 +543,7 @@ exports.calculateCOAttainmentTW = async (req, res) => {
   const record = await CourseOutcome.findOne({ classId });
   const cos = record.cos;
 
-  const dbFields = Object.keys(record.tw || {}); // keep TW-driven loop
+  const coFields = Object.keys(record.tw || {}); // keep TW-driven loop
 
   let lv1 = 0,
     lv2 = 0,
@@ -488,7 +552,7 @@ exports.calculateCOAttainmentTW = async (req, res) => {
   const mappings = marks.map((student) => {
     const result = {};
 
-    for (let field of dbFields) {
+    for (let field of coFields) {
       const score = student.tw?.[field] ?? 0;
 
       // extract CO index from tw1co3 → 3

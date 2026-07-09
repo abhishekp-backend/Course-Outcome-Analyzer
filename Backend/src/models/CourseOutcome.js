@@ -146,6 +146,14 @@ const CourseOutcomeSchema = new mongoose.Schema(
       t3: { type: Number, default: 0 },
       target: { type: Number, default: 0 },
     },
+    
+    universityExams: {
+      totalMarks: { type: Number, default: 0 },
+      t1: { type: Number, default: 0 },
+      t2: { type: Number, default: 0 },
+      t3: { type: Number, default: 0 },
+      target: { type: Number, default: 0 },
+    }
   },
   {
     timestamps: true,

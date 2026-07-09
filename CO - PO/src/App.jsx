@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Login from "./Components/Authentication/Login";
+import "./App.css"
 import Signup from "./Components/Authentication/Signup";
 import Dashboard from "./Components/Dashboard/Dashboard/index";
 import ProtectedRoute from "./Components/ProtectedRoute";

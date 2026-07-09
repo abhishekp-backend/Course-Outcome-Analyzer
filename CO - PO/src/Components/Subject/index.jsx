@@ -13,6 +13,8 @@ import TermWorkManagement from "../CO_PO/TermWorkManagement";
 
 import { updateCOPO } from "../../store/slices/userChanges";
 import toast from "react-hot-toast";
+import { CgSearchLoading } from "react-icons/cg";
+import UniversityCOs from "../CO_PO/UniversityCOs";
 
 export function SubjectInfo() {
   const { id } = useParams();
@@ -31,7 +33,7 @@ export function SubjectInfo() {
   const dispatch = useDispatch();
 
   const { currentSubject } = useSelector((state) => state.subjects);
-  const { students } = useSelector((state) => state.students);
+  const { students, loading:loadingStudents } = useSelector((state) => state.students);
   const { coPos, classId } = useSelector((state) => state.userChanges);
 
   useEffect(() => {
@@ -103,6 +105,7 @@ export function SubjectInfo() {
             // { key: "marks", label: "UT COs" },
             { key: "marks", label: "COs" },
             { key: "experiments", label: "TW COs" },
+            { key: "endsem", label: "University Exams" },
             { key: "mapping", label: "COs Attainment" },
           ].map((t) => (
             <button
@@ -122,11 +125,13 @@ export function SubjectInfo() {
 
       <div className="bg-white rounded-xl h-full shadow-sm p-5">
         {activeTab === "marks" &&
-          (students.length === 0 ? (
+          (students.length === 0 && !loadingStudents ? (
             <div className="p-10 text-center text-gray-500">
               No students available.
             </div>
-          ) : (
+          ) : loadingStudents ? 
+            <CgSearchLoading size={30} color="gray" className="m-auto floatingUpDown" />
+          : (
             <StudentList
               students={students}
               subject={id}
@@ -139,6 +144,10 @@ export function SubjectInfo() {
 
         {activeTab === "experiments" && (
           <TermWorkManagement subjectId={id} termWorks={currentSubject?.co} />
+        )}
+
+        {activeTab === "endsem" && (
+          <UniversityCOs />
         )}
 
         {activeTab === "mapping" && <CO_PO_Mapping subjectId={id} />}

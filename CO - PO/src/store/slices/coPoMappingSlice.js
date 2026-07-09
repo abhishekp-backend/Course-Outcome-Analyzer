@@ -18,7 +18,6 @@ export const fetchMappings = createAsyncThunk(
   }
 );
 
-
 export const updateMapping = createAsyncThunk(
   'coPoMappings/updateMapping',
   async ({ id, correlationLevel }, { rejectWithValue, getState }) => {

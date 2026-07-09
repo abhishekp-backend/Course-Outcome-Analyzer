@@ -59,7 +59,7 @@ function Header({ isSearched, setSearched, searchInputRef }) {
         <input
           type="text"
           ref={searchInputRef}
-          placeholder="Search student by PRN..."
+          placeholder={document.activeElement === searchInputRef.current ? "Search student by PRN..." : "Press S or Ctrl + F"}
           value={search.prn}
           onChange={(e) =>
             setSearch({

@@ -13,7 +13,7 @@ import TermWorkManagement from "../CO_PO/TermWorkManagement";
 
 import { updateCOPO } from "../../store/slices/userChanges";
 import toast from "react-hot-toast";
-import { CgSearchLoading } from "react-icons/cg";
+import { IoPeopleSharp } from "react-icons/io5";
 import UniversityCOs from "../CO_PO/UniversityCOs";
 
 export function SubjectInfo() {
@@ -130,7 +130,7 @@ export function SubjectInfo() {
               No students available.
             </div>
           ) : loadingStudents ? 
-            <CgSearchLoading size={30} color="gray" className="m-auto floatingUpDown" />
+            <IoPeopleSharp size={30} color="gray" className="m-auto floatingUpDown" />
           : (
             <StudentList
               students={students}

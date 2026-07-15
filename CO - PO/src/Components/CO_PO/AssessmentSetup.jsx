@@ -199,7 +199,7 @@ export default function AssessmentSetup() {
                       id={e}
                       type="number"
                       placeholder={coValues?.levels[e]}
-                      value = {coValues?.levels[e]}
+                      value={coValues?.levels[e]}
                       className="w-20 h-9 rounded-md border border-gray-300 bg-white px-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400"
                       onChange={(ev) =>
                         handleCOValuesChange(e, Number(ev.target.value))
@@ -259,6 +259,67 @@ export default function AssessmentSetup() {
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* CO-PO Matrix */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
+        {/* CO-PO Matrix */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 rounded bg-red-500" />
+            <h2 className="text-xl font-semibold text-gray-800">
+              CO-PO Matrix
+            </h2>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-200 text-sm">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border border-gray-200 px-4 py-3 text-left font-semibold min-w-[90px]">
+                    CO / PO
+                  </th>
+
+                  {poList.map((po) => (
+                    <th
+                      key={po.code}
+                      className="border border-gray-200 px-3 py-3 text-center font-semibold min-w-[90px]"
+                    >
+                      {po.code}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {currentSubject?.co?.cos?.map((co, rowIndex) => (
+                  <tr key={co.id || rowIndex} className="hover:bg-gray-50">
+                    <td className="border border-gray-200 px-4 py-3 font-medium bg-gray-50">
+                      CO{rowIndex + 1}
+                    </td>
+
+                    {poList.map((po) => (
+                      <td
+                        key={`${rowIndex}-${po.code}`}
+                        className="border border-gray-200 px-2 py-2 text-center"
+                      >
+                        <select
+                          className="w-16 h-9 rounded-md border border-gray-300 bg-white text-center text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400"
+                          defaultValue=""
+                        >
+                          <option value="">-</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                        </select>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       {/* <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">

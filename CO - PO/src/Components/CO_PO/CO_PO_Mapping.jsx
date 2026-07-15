@@ -25,6 +25,7 @@ function CO_PO_Mapping({ subjectId }) {
           </div>
 
           <div className="bg-gray-50 border rounded-lg p-4 text-center">
+            
             <p className="text-sm text-gray-500">Level 2</p>
             <p className="text-2xl font-bold text-yellow-500">
               {mappings?.summary?.level2 ?? 0}

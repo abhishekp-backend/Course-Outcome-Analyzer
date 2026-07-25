@@ -212,28 +212,51 @@ exports.updateStudentMarks = async (req, res) => {
   }
 };
 
-exports.updateStudent = async (req, res) => {
+exports.updateStudentMarks = async (req, res) => {
   try {
-    const { id, data } = req.body;
+    const classId = req.params.id;
 
-    for (let prn in data) {
-      let temp = data[prn];
-      if (isObject(temp)) {
-        temp = flattenObject(data[prn]);
+    const { students } = req.body;
+
+    if (!students || Object.keys(students).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No updates found",
+      });
+    }
+
+    for (const docId in students) {
+      const studentData = students[docId];
+
+      const { prn, values } = studentData;
+
+      if (!values || Object.keys(values).length === 0) {
+        continue;
       }
 
       await marks.updateOne(
-        { subject: id, prn: prn },
-        { $set: temp },
-        { upsert: true },
+        {
+          class: classId,
+          prn: prn,
+        },
+
+        {
+          $set: values,
+        },
+
+        {
+          upsert: true,
+        },
       );
     }
 
-    return res
-      .status(200)
-      .json({ status: true, message: "Marks updated successfully!" });
+    return res.status(200).json({
+      success: true,
+      message: "Marks updated successfully!",
+    });
   } catch (error) {
     console.log(error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to update marks!",
@@ -309,7 +332,9 @@ exports.uploadStudents = [
         existingStudents.map((student) => student.prn),
       );
 
-      const validRows = rows.filter((row) => !existingPRNs.has(row.PRN.toString()));
+      const validRows = rows.filter(
+        (row) => !existingPRNs.has(row.PRN.toString()),
+      );
 
       const duplicatePRNs = rows
         .filter((row) => existingPRNs.has(row.PRN))

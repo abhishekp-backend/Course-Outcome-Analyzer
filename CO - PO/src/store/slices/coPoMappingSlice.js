@@ -117,6 +117,7 @@ const coPoMappingSlice = createSlice({
     builder
       // Fetch mappings
       .addCase(fetchMappings.pending, (state) => {
+        console.log("Mappings: ", state.mappings)
         state.loading = true;
         state.error = null;
         state.isFetched = false;

@@ -11,7 +11,7 @@ import AssessmentSetup from "../CO_PO/AssessmentSetup";
 import CO_PO_Mapping from "../CO_PO/CO_PO_Mapping";
 import TermWorkManagement from "../CO_PO/TermWorkManagement";
 
-import { updateCOPO } from "../../store/slices/userChanges";
+import { updateCOPO, updateMarks } from "../../store/slices/userChanges";
 import toast from "react-hot-toast";
 import { IoPeopleSharp } from "react-icons/io5";
 import UniversityCOs from "../CO_PO/UniversityCOs";
@@ -26,7 +26,8 @@ export function SubjectInfo() {
   const { getSubjectInfo, subjects, fetchAllSubject, fetchCO, loadingCO } =
     useSubjects();
 
-  const [isChanged, setChanged] = useState(false);
+  const [isMarksChanged, setMarksChanged] = useState(false);
+  const [isCOPOChanged, setCOPOChanged] = useState(false);
   const [activeTab, setActiveTab] = useState(tab);
 
   const nav = useNavigate();
@@ -57,11 +58,24 @@ export function SubjectInfo() {
   }, [activeTab]);
 
   const saveChanges = async () => {
-    try {
-      await dispatch(updateCOPO()).unwrap();
-      toast.success("Saved changes!");
-    } catch (err) {
-      toast.error(err);
+    if (isCOPOChanged) {
+      try {
+        await dispatch(updateCOPO()).unwrap();
+        toast.success("Saved changes!");
+        setCOPOChanged(false);
+      } catch (err) {
+        toast.error(err);
+      }
+    }
+
+    if (isMarksChanged) {
+      try {
+        await dispatch(updateMarks()).unwrap();
+        toast.success("Updated Marks!");
+        setMarksChanged(false);
+      } catch (err) {
+        toast.error(err);
+      }
     }
   };
 
@@ -80,7 +94,6 @@ export function SubjectInfo() {
             subjects.find((s) => s._id === id)?.name ||
             "Loading..."}
         </h1>
-        {console.log(classId)}
 
         <button
           onClick={saveChanges}
@@ -134,13 +147,14 @@ export function SubjectInfo() {
           : (
             <StudentList
               students={students}
-              subject={id}
+              class={id}
+              twCount = {0 || currentSubject?.co?.tws}
               deleteStudent={removeStudent}
-              setChange={setChanged}
+              setChange={setMarksChanged}
             />
           ))}
 
-        {activeTab === "co" && <AssessmentSetup subjectId={id} />}
+        {activeTab === "co" && <AssessmentSetup setChange = {setCOPOChanged} subjectId={id} />}
 
         {activeTab === "experiments" && (
           <TermWorkManagement subjectId={id} termWorks={currentSubject?.co} />

@@ -77,8 +77,7 @@ export default function MarksUploadSection({ subjectId }) {
                 classId: id,
             }),
         ).unwrap();
-        console.log("Uploading file!")
-
+        
       setFile(null);
 
       if (fileRef.current) {

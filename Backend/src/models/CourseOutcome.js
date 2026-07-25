@@ -131,7 +131,7 @@ const CourseOutcomeSchema = new mongoose.Schema(
       target: { type: Number, default: 0 },
     },
 
-    pbls: {
+    pbl: {
       totalMarks: { type: Number, default: 0 },
       t1: { type: Number, default: 0 },
       t2: { type: Number, default: 0 },

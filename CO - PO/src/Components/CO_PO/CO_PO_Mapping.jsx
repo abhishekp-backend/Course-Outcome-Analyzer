@@ -2,7 +2,7 @@ import React from "react";
 import { useCO_PO_Mapping } from "../../hooks/useCO_PO_Mapping";
 
 function CO_PO_Mapping({ subjectId }) {
-  const { mappings } = useCO_PO_Mapping(subjectId);
+  const { mappings, fetchMappings, calculatePOAttainmentFromCO } = useCO_PO_Mapping(subjectId);
 
   return (
     <>
@@ -14,6 +14,13 @@ function CO_PO_Mapping({ subjectId }) {
             CO Attainment Report
           </h2>
         </div>
+
+        <button
+          onClick={calculatePOAttainmentFromCO}
+          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
+        >
+          Calculate Attainment
+        </button>
 
         {/* Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

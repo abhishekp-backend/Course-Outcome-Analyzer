@@ -7,7 +7,7 @@ import { updateCOValues } from "../../store/slices/userChanges";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
-export default function AssessmentSetup() {
+export default function AssessmentSetup({setChange}) {
   const { currentSubject } = useSelector((state) => state.subjects);
 
   const dispatch = useDispatch();
@@ -107,7 +107,6 @@ export default function AssessmentSetup() {
   ];
 
   const handleCOValuesChange = (field, value) => {
-    console.log("field, value", field, value);
     setCOValues((prev) => {
       const updated =
         field === "target"
@@ -130,6 +129,8 @@ export default function AssessmentSetup() {
           value,
         }),
       );
+
+      setChange(true);
 
       return updated;
     });
@@ -194,7 +195,6 @@ export default function AssessmentSetup() {
                     >
                       Level {e.at(-1)}
                     </label>
-                    {console.log(e)}
                     <input
                       id={e}
                       type="number"

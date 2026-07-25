@@ -4,7 +4,6 @@ const {
   addStudent,
   getAllStudents,
   getStudentById,
-  updateStudent,
   updateStudentMarks,
   deleteStudent,
   uploadStudents
@@ -16,7 +15,7 @@ const router = express.Router();
 router.post('/', authenticateToken, addStudent);
 router.post('/getStudents', authenticateToken, getAllStudents);
 router.post('/getStudent', authenticateToken, getStudentById);
-router.put('/:id', authenticateToken, updateStudent);
+router.put('/:id', authenticateToken, updateStudentMarks);
 router.delete('/:id', authenticateToken, deleteStudent);
 router.post('/upload-excel', authenticateToken, uploadStudents);
 

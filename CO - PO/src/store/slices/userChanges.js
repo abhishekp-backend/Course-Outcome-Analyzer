@@ -10,11 +10,38 @@ const initialState = {
     cos: [],
     values: {},
   },
+
   assess: {},
-  error: "",
+
+  marks: {},
+
   classId: null,
-  // {subjectId, arrayDocId, values}
+
+  error: "",
 };
+
+export const updateMarks = createAsyncThunk(
+  "userChanges/updateMarks",
+
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { userChanges } = getState();
+
+      const response = await api.put(
+        `/api/students/${userChanges.classId}`,
+        {
+          students: userChanges.marks,
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update marks",
+      );
+    }
+  },
+);
 
 export const updateCOPO = createAsyncThunk(
   "userChanges/updateCOPO",
@@ -111,6 +138,27 @@ const userChanges = createSlice({
       }
     },
 
+    updateMarksField(state, action) {
+      const { classId, docId, prn, field, value } = action.payload;
+
+      state.classId = classId;
+
+      if (!state.marks) {
+        state.marks = {};
+      }
+
+      // Create student entry if it doesn't exist
+      if (!state.marks[docId]) {
+        state.marks[docId] = {
+          prn,
+          values: {},
+        };
+      }
+
+      // Store only changed field
+      state.marks[docId].values[field] = value;
+    },
+
     clearCos(state) {
       state.coPos = { cos: [] };
     },
@@ -139,5 +187,6 @@ export const {
   updateSAField,
   updateTWField,
   updateCOValues,
+  updateMarksField,
 } = userChanges.actions;
 export default userChanges.reducer;

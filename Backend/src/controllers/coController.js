@@ -115,8 +115,8 @@ exports.updateCO = async (req, res) => {
     // 3. CO Target & CO Levels
     // -----------------------------
     if (values && typeof values === "object") {
-      if (values.target !== undefined) {
-        setQuery["coTarget"] = values.target;
+      if (values?.target !== undefined) {
+        setQuery["coTarget"] = values?.target;
       }
 
       if (values.levels && typeof values.levels === "object") {
@@ -410,7 +410,7 @@ exports.calculateCOAttainment = async (req, res) => {
       "ut2co6",
     ];
 
-    const assessFields = ["universityExams"];
+    const assessFields = ["universityExams", "internalAssessment", "pbl"];
 
     const coAttainment = {};
     const assessAttainment = {};
@@ -430,7 +430,7 @@ exports.calculateCOAttainment = async (req, res) => {
     // Initialize statistics for each Assessment
     assessFields.forEach((field, index) => {
       assessAttainment[field] = {
-        target: coDoc[field].target,
+        target: coDoc[field]?.target,
         total: coDoc[field].totalMarks,
         achieved: 0,
         totalStudents: marks.length,
@@ -462,7 +462,7 @@ exports.calculateCOAttainment = async (req, res) => {
 
         const percentage = (score / total) * 100;
 
-        if (percentage >= coDoc[field].target) {
+        if (percentage >= coDoc[field]?.target) {
           assessAttainment[field].achieved++;
         }
       });

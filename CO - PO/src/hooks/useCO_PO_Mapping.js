@@ -7,31 +7,32 @@ import {
   calculatePOAttainment,
   clearMappingError,
 } from "../store/slices/coPoMappingSlice";
-import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+// import { useNavigate } from "react-router-dom";
 
 export const useCO_PO_Mapping = (subjectId) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { mappings, poAttainment, loading, error } = useSelector(
     (state) => state.coPoMappings,
   );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!subjectId) return;
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (!subjectId) return;
 
-      const response = await dispatch(fetchMappings(subjectId));
+  //     const response = await dispatch(fetchMappings(subjectId));
 
-      if (
-        fetchMappings.rejected.match(response) &&
-        [401, 403].includes(response.payload?.status)
-      ) {
-        navigate("/");
-      }
-    };
+  //     if (
+  //       fetchMappings.rejected.match(response) &&
+  //       [401, 403].includes(response.payload?.status)
+  //     ) {
+  //       navigate("/");
+  //     }
+  //   };
 
-    fetchData();
-  }, [subjectId, dispatch, navigate]);
+  //   fetchData();
+  // }, [subjectId, dispatch, navigate]);
 
   const updateCO_PO_Mapping = async (id, correlationLevel) => {
     try {
@@ -51,13 +52,16 @@ export const useCO_PO_Mapping = (subjectId) => {
     }
   };
 
-  const calculatePOAttainmentFromCO = async (coAttainment) => {
+  const calculatePOAttainmentFromCO = async () => {
     try {
       await dispatch(
-        calculatePOAttainment({ subjectId, coAttainment }),
+        fetchMappings(subjectId),
       ).unwrap();
+      toast.success("Successfully attained!")
       return { success: true };
     } catch (error) {
+      console.log("[ERROR]: ", error);
+      toast.error("Internal Attainment Error!")
       return { success: false, error };
     }
   };

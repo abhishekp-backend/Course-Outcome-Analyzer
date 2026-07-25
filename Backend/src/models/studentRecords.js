@@ -54,7 +54,7 @@ const studentMarksSchema = new mongoose.Schema(
     tw10co1: { type: Number, min: 0, max: 20, default: 0 },
     tw10co2: { type: Number, min: 0, max: 20, default: 0 },
     tw10co3: { type: Number, min: 0, max: 20, default: 0 },
-    ia: { type: Number, min: 0, max: 40, default: 0 },
+    internalAssessment: { type: Number, min: 0, max: 40, default: 0 },
     pbl: { type: Number, min: 0, max: 20, default: 0 },
     tw: { type: Number, min: 0, max: 100, default: 0 },
     universityExam: { type: Number, min: 0, max: 60, default: 0 },

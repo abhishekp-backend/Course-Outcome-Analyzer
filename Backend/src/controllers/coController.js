@@ -136,9 +136,10 @@ exports.updateCO = async (req, res) => {
     // -----------------------------
     // 5. Assessment updates
     // -----------------------------
+    let twQuery = {};
     if (assess?.tw && typeof assess.tw === "object") {
       for (const key in assess.tw) {
-        setQuery[`tw.${key}`] = assess.tw[key];
+        twQuery[`tw.${key}`] = assess.tw[key];
       }
     }
 
@@ -147,6 +148,7 @@ exports.updateCO = async (req, res) => {
     // -----------------------------
     if (Object.keys(assess).length > 0) {
       for (const key in assess) {
+        if (key === "tw") continue;
         setQuery[key] = assess[key];
       }
     }
@@ -154,7 +156,7 @@ exports.updateCO = async (req, res) => {
     // -----------------------------
     // 7. Guard: nothing to update
     // -----------------------------
-    if (Object.keys(setQuery).length === 0) {
+    if (Object.keys(setQuery).length === 0 && Object.keys(twQuery).length === 0) {
       return res.status(400).json({
         success: false,
         message: "No valid fields to update",
@@ -164,14 +166,25 @@ exports.updateCO = async (req, res) => {
     // -----------------------------
     // 8. Execute update
     // -----------------------------
-    await CourseOutcome.updateMany(
-      { classId: classObjId },
-      { $set: setQuery },
-      {
-        arrayFilters: arrayFilters.length ? arrayFilters : undefined,
-        runValidators: true,
-      },
-    );
+    if (Object.keys(setQuery).length > 0) {
+      await CourseOutcome.updateMany(
+        { classId: classObjId },
+        { $set: setQuery },
+        {
+          arrayFilters: arrayFilters.length ? arrayFilters : undefined,
+          runValidators: true,
+        },
+      );
+    }
+
+    if (Object.keys(twQuery).length > 0) {
+      await CourseOutcome.updateOne(
+        { classId: classObjId },
+        {
+          $set: twQuery,
+        },
+      );
+    }
 
     await Section.updateOne(
       {
@@ -502,7 +515,7 @@ exports.calculateCOAttainment = async (req, res) => {
         data.totalStudents === 0
           ? 0
           : Number(((data.achieved / data.totalStudents) * 100).toFixed(2));
-      
+
       if (data.attainmentPercentage >= coDoc[field].t1) {
         data.level = 3;
         level3++;
@@ -512,8 +525,7 @@ exports.calculateCOAttainment = async (req, res) => {
       } else if (data.attainmentPercentage >= coDoc[field].t3) {
         data.level = 1;
         level1++;
-      }
-      else {
+      } else {
         data.level = 0;
       }
     });

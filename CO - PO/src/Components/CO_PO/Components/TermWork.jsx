@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateTWField } from "../../../store/slices/userChanges";
 
-function TermWork({ twIndex }) {
+function TermWork({ twIndex, setChange }) {
   const dispatch = useDispatch();
 
   const subjectTW =
@@ -25,26 +25,6 @@ function TermWork({ twIndex }) {
 
   const classId = location.pathname.split("/").slice(-1)[0];
 
-  // ✅ ensure dropdown always has default value
-  useEffect(() => {
-    if (!localTW[selectKey]) {
-      const firstCO = currentSubject?.co?.cos?.[0]?.name || "";
-      setLocalTW((prev) => ({
-        ...prev,
-        [selectKey]: firstCO,
-      }));
-
-      dispatch(
-        updateTWField({
-          classId,
-          updates: {
-            [selectKey]: firstCO,
-          },
-        })
-      );
-    }
-  }, [currentSubject]);
-
   const handleMatrixChange = (coIndex, value) => {
     const key = `tw${twIndex}co${coIndex}`;
     const val = Number(value);
@@ -59,16 +39,18 @@ function TermWork({ twIndex }) {
         },
       })
     );
-  };
 
+    setChange(true);
+  };
+  
   const handleTotalMarksChange = (value) => {
     const val = Number(value);
-
+    
     setLocalTW((prev) => ({
       ...prev,
       [totalMarksKey]: val,
     }));
-
+    
     dispatch(
       updateTWField({
         classId,
@@ -76,7 +58,9 @@ function TermWork({ twIndex }) {
           [totalMarksKey]: val,
         },
       })
-    );
+    )
+    
+    setChange(true);
   };
 
   const handleSelectChange = (value) => {
@@ -93,6 +77,8 @@ function TermWork({ twIndex }) {
         },
       })
     );
+
+    setChange(true);
   };
 
   return (

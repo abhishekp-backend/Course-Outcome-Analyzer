@@ -55,6 +55,7 @@ export const updateCOPO = createAsyncThunk(
         tws: userChanges?.tws,
         values: userChanges?.coPos?.values,
       });
+
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -125,10 +126,10 @@ const userChanges = createSlice({
       const { updates, classId } = action.payload;
       // 🔥 attach classId for backend
       state.classId = classId;
-
+      
       if (!state.assess) state.assess = {};
       if (!state.assess.tw) state.assess.tw = {};
-
+      
       for (const key in updates) {
         if (key !== "tws") {
           state.assess.tw[key] = updates[key];
@@ -136,6 +137,7 @@ const userChanges = createSlice({
           state.assess.tws = updates["tws"];
         }
       }
+      console.log(state.assess.tw)
     },
 
     updateMarksField(state, action) {

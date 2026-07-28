@@ -5,27 +5,15 @@ const subject = require("./Subject");
 // -----------------------------
 // Term Work dynamic fields
 // -----------------------------
-const twSchemaFields = {};
-
-for (let i = 1; i <= 10; i++) {
-  twSchemaFields[`tw${i}`] = {
-    type: {
-      co1: { type: Number, min: 0, max: 100, default: 0 },
-      co2: { type: Number, min: 0, max: 100, default: 0 },
-      co3: { type: Number, min: 0, max: 100, default: 0 },
-    },
-    default: () => ({
-      co1: 0,
-      co2: 0,
-      co3: 0,
-    }),
-  };
-
-  twSchemaFields[`tw${i}Label`] = {
-    type: String,
-    default: "",
-  };
-}
+const TwItemSchema = new mongoose.Schema(
+  {
+    label: String,
+    co1: Number,
+    co2: Number,
+    co3: Number,
+  },
+  { _id: false },
+);
 
 // -----------------------------
 // CO / PO base template (reused)
@@ -103,7 +91,10 @@ const CourseOutcomeSchema = new mongoose.Schema(
     // -----------------------------
     // Term Work
     // -----------------------------
-    tw: twSchemaFields,
+    tw: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
 
     tws: {
       type: Number,
@@ -146,50 +137,46 @@ const CourseOutcomeSchema = new mongoose.Schema(
       t3: { type: Number, default: 0 },
       target: { type: Number, default: 0 },
     },
-    
+
     universityExams: {
       totalMarks: { type: Number, default: 0 },
       t1: { type: Number, default: 0 },
       t2: { type: Number, default: 0 },
       t3: { type: Number, default: 0 },
       target: { type: Number, default: 0 },
-    }
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 CourseOutcomeSchema.post(
   ["updateOne", "findOneAndUpdate", "updateMany"],
   async function () {
     try {
+      const Class = mongoose.model("Class");
+      const Subject = mongoose.model("Subject");
+
       const filter = this.getFilter();
 
       if (!filter.classId) return;
 
-      await section.findByIdAndUpdate(
-        filter.classId,
-        { updatedAt: new Date() }
-      );
+      await Class.findByIdAndUpdate(filter.classId, {
+        updatedAt: new Date(),
+      });
 
-      const cls = await section
-        .findById(filter.classId)
-        .select("subject");
+      const cls = await Class.findById(filter.classId).select("subject");
 
       if (!cls) return;
 
-      await subject.findByIdAndUpdate(
-        cls.subject,
-        { updatedAt: new Date() }
-      );
+      await Subject.findByIdAndUpdate(cls.subject, {
+        updatedAt: new Date(),
+      });
     } catch (err) {
-      console.error(
-        "Failed to propagate updatedAt:",
-        err
-      );
+      console.error("[BACKEND] Failed to propagate updatedAt:", err);
     }
-  }
+  },
 );
 
 module.exports = mongoose.model("CourseOutcome", CourseOutcomeSchema);

@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { updateTWField } from "../../store/slices/userChanges";
 import TermWork from "./Components/TermWork";
 
-function TermWorkManagement({ termWorks }) {
+function TermWorkManagement({ termWorks, setChange }) {
   const dispatch = useDispatch();
 
   const tws = termWorks?.tws;
@@ -76,7 +76,7 @@ function TermWorkManagement({ termWorks }) {
               key={i + 1}
               className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
             >
-              <TermWork twIndex={i + 1} />
+              <TermWork setChange={setChange} twIndex={i + 1} />
             </div>
           ))
         ) : (

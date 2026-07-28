@@ -60,6 +60,7 @@ export function SubjectInfo() {
   const saveChanges = async () => {
     if (isCOPOChanged) {
       try {
+        console.log("Saving")
         await dispatch(updateCOPO()).unwrap();
         toast.success("Saved changes!");
         setCOPOChanged(false);
@@ -94,7 +95,10 @@ export function SubjectInfo() {
             subjects.find((s) => s._id === id)?.name ||
             "Loading..."}
         </h1>
-
+          {
+            console.log(coPos.finde,
+            Object.keys(coPos).length === 0)
+          }
         <button
           onClick={saveChanges}
           disabled={
@@ -157,7 +161,7 @@ export function SubjectInfo() {
         {activeTab === "co" && <AssessmentSetup setChange = {setCOPOChanged} subjectId={id} />}
 
         {activeTab === "experiments" && (
-          <TermWorkManagement subjectId={id} termWorks={currentSubject?.co} />
+          <TermWorkManagement setChange = {setCOPOChanged} subjectId={id} termWorks={currentSubject?.co} />
         )}
 
         {activeTab === "endsem" && (

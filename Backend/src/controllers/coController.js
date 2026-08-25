@@ -4,6 +4,7 @@ const CO_PO_Mapping = require("../models/CO_PO_Mapping");
 const StudentMarks = require("../models/studentRecords");
 const Student = require("../models/Student");
 const Section = require("../models/Class");
+const Indirect = require("../models/Indirect");
 const mongoose = require("mongoose");
 
 // Create a new Course Outcome
@@ -65,7 +66,7 @@ exports.getCOsBySubject = async (req, res) => {
 // Update a CO
 exports.updateCO = async (req, res) => {
   try {
-    let { classId, cos, values, assess } = req.body;
+    let { classId, cos, values, assess, indirect } = req.body;
 
     // -----------------------------
     // 1. Validate classId
@@ -78,13 +79,14 @@ exports.updateCO = async (req, res) => {
     }
 
     const classObjectId = Array.isArray(classId) ? classId[0] : classId;
+
     const classObjId = new mongoose.Types.ObjectId(classObjectId);
 
     const setQuery = {};
     const arrayFilters = [];
 
     // -----------------------------
-    // 2. COS updates (array updates)
+    // 2. COS updates
     // -----------------------------
     if (Array.isArray(cos) && cos.length > 0) {
       cos.forEach((co, index) => {
@@ -95,12 +97,12 @@ exports.updateCO = async (req, res) => {
 
         const coObjId = new mongoose.Types.ObjectId(_id);
 
-        // Update Course Outcomes
+        // Course Outcomes
         for (const key in fields) {
           setQuery[`cos.$[${alias}].${key}`] = fields[key];
         }
 
-        // Update Program Outcomes
+        // Program Outcomes
         for (const key in fields) {
           setQuery[`pos.$[${alias}].${key}`] = fields[key];
         }
@@ -115,8 +117,8 @@ exports.updateCO = async (req, res) => {
     // 3. CO Target & CO Levels
     // -----------------------------
     if (values && typeof values === "object") {
-      if (values?.target !== undefined) {
-        setQuery["coTarget"] = values?.target;
+      if (values.target !== undefined) {
+        setQuery["coTarget"] = values.target;
       }
 
       if (values.levels && typeof values.levels === "object") {
@@ -134,9 +136,10 @@ exports.updateCO = async (req, res) => {
     }
 
     // -----------------------------
-    // 5. Assessment updates
+    // 5. Term Work updates
     // -----------------------------
-    let twQuery = {};
+    const twQuery = {};
+
     if (assess?.tw && typeof assess.tw === "object") {
       for (const key in assess.tw) {
         twQuery[`tw.${key}`] = assess.tw[key];
@@ -146,30 +149,27 @@ exports.updateCO = async (req, res) => {
     // -----------------------------
     // 6. Other assessments
     // -----------------------------
-    if (Object.keys(assess).length > 0) {
+    if (assess && typeof assess === "object") {
       for (const key in assess) {
-        if (key === "tw") continue;
+        if (key === "tw" || key === "tws") {
+          continue;
+        }
+
         setQuery[key] = assess[key];
       }
     }
 
     // -----------------------------
-    // 7. Guard: nothing to update
-    // -----------------------------
-    if (Object.keys(setQuery).length === 0 && Object.keys(twQuery).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No valid fields to update",
-      });
-    }
-
-    // -----------------------------
-    // 8. Execute update
+    // 7. CourseOutcome update
     // -----------------------------
     if (Object.keys(setQuery).length > 0) {
       await CourseOutcome.updateMany(
-        { classId: classObjId },
-        { $set: setQuery },
+        {
+          classId: classObjId,
+        },
+        {
+          $set: setQuery,
+        },
         {
           arrayFilters: arrayFilters.length ? arrayFilters : undefined,
           runValidators: true,
@@ -179,13 +179,65 @@ exports.updateCO = async (req, res) => {
 
     if (Object.keys(twQuery).length > 0) {
       await CourseOutcome.updateOne(
-        { classId: classObjId },
+        {
+          classId: classObjId,
+        },
         {
           $set: twQuery,
+        },
+        {
+          runValidators: true,
         },
       );
     }
 
+    // -----------------------------
+    // 8. INDIRECT ASSESSMENT
+    // -----------------------------
+    if (
+      indirect &&
+      typeof indirect === "object" &&
+      Object.keys(indirect).length > 0
+    ) {
+      const allowedFields = ["level1", "level2", "level3"];
+
+      const indirectSetQuery = {};
+
+      for (const field of allowedFields) {
+        if (indirect[field] !== undefined) {
+          indirectSetQuery[field] = indirect[field];
+        }
+      }
+
+      if (Object.keys(indirectSetQuery).length > 0) {
+        const indirectDoc = await Indirect.findOne({
+          class: classObjId,
+        });
+
+        if (!indirectDoc) {
+          return res.status(404).json({
+            success: false,
+            message: "Indirect assessment record not found",
+          });
+        }
+
+        await Indirect.updateOne(
+          {
+            class: classObjId,
+          },
+          {
+            $set: indirectSetQuery,
+          },
+          {
+            runValidators: true,
+          },
+        );
+      }
+    }
+
+    // -----------------------------
+    // 9. Update Section timestamp
+    // -----------------------------
     await Section.updateOne(
       {
         _id: classObjId,
@@ -200,7 +252,7 @@ exports.updateCO = async (req, res) => {
       message: "Updated successfully",
     });
   } catch (error) {
-    console.error(error);
+    console.error("updateCO error:", error);
 
     return res.status(500).json({
       success: false,
@@ -404,8 +456,16 @@ exports.calculateCOAttainment = async (req, res) => {
   try {
     const { classId } = req.params;
 
-    const marks = await StudentMarks.find({ class: classId });
-    const coDoc = await CourseOutcome.findOne({ classId });
+    // --------------------------------
+    // 1. Fetch required data
+    // --------------------------------
+    const marks = await StudentMarks.find({
+      class: classId,
+    });
+
+    const coDoc = await CourseOutcome.findOne({
+      classId,
+    });
 
     if (!coDoc) {
       return res.status(404).json({
@@ -414,6 +474,9 @@ exports.calculateCOAttainment = async (req, res) => {
       });
     }
 
+    // --------------------------------
+    // 2. Fields
+    // --------------------------------
     const coFields = [
       "ut1co1",
       "ut1co2",
@@ -428,11 +491,13 @@ exports.calculateCOAttainment = async (req, res) => {
     const coAttainment = {};
     const assessAttainment = {};
 
-    // Initialize statistics for each CO
+    // --------------------------------
+    // 3. Initialize CO statistics
+    // --------------------------------
     coFields.forEach((field, index) => {
       coAttainment[field] = {
         target: coDoc.coTarget,
-        total: coDoc.cos[index].totalMarks,
+        total: coDoc.cos[index]?.totalMarks ?? 0,
         achieved: 0,
         totalStudents: marks.length,
         attainmentPercentage: 0,
@@ -440,11 +505,13 @@ exports.calculateCOAttainment = async (req, res) => {
       };
     });
 
-    // Initialize statistics for each Assessment
-    assessFields.forEach((field, index) => {
+    // --------------------------------
+    // 4. Initialize assessment statistics
+    // --------------------------------
+    assessFields.forEach((field) => {
       assessAttainment[field] = {
         target: coDoc[field]?.target,
-        total: coDoc[field].totalMarks,
+        total: coDoc[field]?.totalMarks ?? 0,
         achieved: 0,
         totalStudents: marks.length,
         attainmentPercentage: 0,
@@ -452,8 +519,11 @@ exports.calculateCOAttainment = async (req, res) => {
       };
     });
 
-    // Count students achieving the target
+    // --------------------------------
+    // 5. Count students achieving target
+    // --------------------------------
     for (const student of marks) {
+      // CO attainment
       coFields.forEach((field) => {
         const score = student[field] ?? 0;
         const total = coAttainment[field].total;
@@ -467,6 +537,7 @@ exports.calculateCOAttainment = async (req, res) => {
         }
       });
 
+      // Assessment attainment
       assessFields.forEach((field) => {
         const score = student[field] ?? 0;
         const total = assessAttainment[field].total;
@@ -481,11 +552,16 @@ exports.calculateCOAttainment = async (req, res) => {
       });
     }
 
+    // --------------------------------
+    // 6. Level counters
+    // --------------------------------
     let level1 = 0;
     let level2 = 0;
     let level3 = 0;
 
-    // Calculate coAttainment percentage and assign level
+    // --------------------------------
+    // 7. Calculate CO levels
+    // --------------------------------
     coFields.forEach((field) => {
       const data = coAttainment[field];
 
@@ -508,6 +584,9 @@ exports.calculateCOAttainment = async (req, res) => {
       }
     });
 
+    // --------------------------------
+    // 8. Calculate assessment levels
+    // --------------------------------
     assessFields.forEach((field) => {
       const data = assessAttainment[field];
 
@@ -530,17 +609,74 @@ exports.calculateCOAttainment = async (req, res) => {
       }
     });
 
+    // --------------------------------
+    // 9. Overall attainment
+    // --------------------------------
+
+    const totalStudents = marks.length;
+
+    /*
+      Original formula:
+
+      ((level1 * 1 + level2 * 2 + level3 * 3)
+        / totalStudents)
+        * 100
+        / (totalStudents * 3)
+    */
+
+    const indirectDoc = await Indirect.findOne({
+      class: new mongoose.Types.ObjectId(classId),
+    });
+
+    if (!indirectDoc) {
+      return res.status(400).json({ message: "Bad request" });
+    }
+
+    const indirectAttainmentPercentage =
+      totalStudents === 0
+        ? 0
+        : Number(
+            (
+              ((indirectDoc.level1 * 1 +
+                indirectDoc.level2 * 2 +
+                indirectDoc.level3 * 3) /
+                (totalStudents * 3)) *
+              100
+            ).toFixed(2),
+          );
+    const l1 = Number(indirectDoc.level1 ?? 0);
+    const l2 = Number(indirectDoc.level2 ?? 0);
+    const l3 = Number(indirectDoc.level3 ?? 0);
+
+    console.log({
+      l1,
+      l2,
+      l3,
+      totalStudents,
+      numerator: l1 * 1 + l2 * 2 + l3 * 3,
+    });
+
+    // --------------------------------
+    // 10. Response
+    // --------------------------------
     return res.status(200).json({
       success: true,
+
       coAttainment,
+
       assessAttainment,
+
       summary: {
         level1,
         level2,
         level3,
+        totalStudents,
+        indirectAttainmentPercentage,
       },
     });
   } catch (err) {
+    console.error("calculateCOAttainment error:", err);
+
     return res.status(500).json({
       success: false,
       message: err.message,

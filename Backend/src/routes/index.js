@@ -6,8 +6,9 @@ const coRoutes = require('./cos');
 const poRoutes = require('./pos');
 const coPoMappingRoutes = require('./coPoMappings');
 const academicYearRoutes = require('./academic');
-const branch = require("./branch")
-const classes = require("./class")
+const branch = require("./branch");
+const classes = require("./class");
+const indirect = require("./indirect");
 
 const router = express.Router();
 
@@ -31,6 +32,7 @@ router.use('/co-po-mappings', coPoMappingRoutes);
 router.use('/academic', academicYearRoutes);
 router.use('/branch', branch);
 router.use('/class', classes);
+router.use('/indirect', indirect);
 
 // Note: 404 handling will be done in the main server.js file
 

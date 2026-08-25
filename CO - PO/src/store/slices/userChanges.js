@@ -15,6 +15,8 @@ const initialState = {
 
   marks: {},
 
+  indirect: {}, 
+
   classId: null,
 
   error: "",
@@ -27,12 +29,9 @@ export const updateMarks = createAsyncThunk(
     try {
       const { userChanges } = getState();
 
-      const response = await api.put(
-        `/api/students/${userChanges.classId}`,
-        {
-          students: userChanges.marks,
-        },
-      );
+      const response = await api.put(`/api/students/${userChanges.classId}`, {
+        students: userChanges.marks,
+      });
 
       return response.data;
     } catch (error) {
@@ -48,12 +47,14 @@ export const updateCOPO = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const { userChanges } = getState();
+      
       const response = await api.post("/api/cos/updateCO", {
         cos: userChanges.coPos.cos,
         assess: userChanges.assess,
         classId: userChanges.classId,
         tws: userChanges?.tws,
         values: userChanges?.coPos?.values,
+        indirect: userChanges.indirect,
       });
 
       return response.data;
@@ -126,10 +127,10 @@ const userChanges = createSlice({
       const { updates, classId } = action.payload;
       // 🔥 attach classId for backend
       state.classId = classId;
-      
+
       if (!state.assess) state.assess = {};
       if (!state.assess.tw) state.assess.tw = {};
-      
+
       for (const key in updates) {
         if (key !== "tws") {
           state.assess.tw[key] = updates[key];
@@ -137,7 +138,6 @@ const userChanges = createSlice({
           state.assess.tws = updates["tws"];
         }
       }
-      console.log(state.assess.tw)
     },
 
     updateMarksField(state, action) {
@@ -159,6 +159,18 @@ const userChanges = createSlice({
 
       // Store only changed field
       state.marks[docId].values[field] = value;
+    },
+
+    updateIndirectField(state, action) {
+      const { classId, field, value } = action.payload;
+
+      state.classId = classId;
+
+      if (!state.indirect) {
+        state.indirect = {};
+      }
+
+      state.indirect[field] = value;
     },
 
     clearCos(state) {
@@ -190,5 +202,6 @@ export const {
   updateTWField,
   updateCOValues,
   updateMarksField,
+  updateIndirectField,
 } = userChanges.actions;
 export default userChanges.reducer;

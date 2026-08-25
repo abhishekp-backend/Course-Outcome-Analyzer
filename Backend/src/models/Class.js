@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const co = require("./CourseOutcome")
+const co = require("./CourseOutcome");
+const Indirect = require("./Indirect");
 
 const classSchema = new mongoose.Schema(
   {
@@ -49,6 +50,11 @@ const classSchema = new mongoose.Schema(
 classSchema.post("save", async function (doc) {
   await co.create({
     classId: doc._id,
+  })
+
+  await Indirect.create({
+    class: doc._id,
+    academicYear: doc.academicYear,
   })
 })
 

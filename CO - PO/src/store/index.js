@@ -5,6 +5,7 @@ import studentSlice from './slices/studentSlice';
 import poReducer from './slices/poSlice';
 import coPoMappingReducer from './slices/coPoMappingSlice';
 import userChangesReducer from "./slices/userChanges";
+import indirectReducer from "./slices/indirectSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     pos: poReducer,
     coPoMappings: coPoMappingReducer,
     userChanges: userChangesReducer,
+    indirect: indirectReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

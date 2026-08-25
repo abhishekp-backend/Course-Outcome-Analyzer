@@ -15,6 +15,7 @@ import { updateCOPO, updateMarks } from "../../store/slices/userChanges";
 import toast from "react-hot-toast";
 import { IoPeopleSharp } from "react-icons/io5";
 import UniversityCOs from "../CO_PO/UniversityCOs";
+import IndirectSetup from "../CO_PO/IndirectSetup";
 
 export function SubjectInfo() {
   const { id } = useParams();
@@ -28,14 +29,17 @@ export function SubjectInfo() {
 
   const [isMarksChanged, setMarksChanged] = useState(false);
   const [isCOPOChanged, setCOPOChanged] = useState(false);
+  const [isIndirectChanged, setIndirectChanged] = useState(false);
   const [activeTab, setActiveTab] = useState(tab);
 
   const nav = useNavigate();
   const dispatch = useDispatch();
 
   const { currentSubject } = useSelector((state) => state.subjects);
-  const { students, loading:loadingStudents } = useSelector((state) => state.students);
-  const { coPos, classId } = useSelector((state) => state.userChanges);
+  const { students, loading: loadingStudents } = useSelector(
+    (state) => state.students,
+  );
+  const { coPos, classId, indirect } = useSelector((state) => state.userChanges);
 
   useEffect(() => {
     if (!loadingCO) fetchCO(id);
@@ -58,9 +62,9 @@ export function SubjectInfo() {
   }, [activeTab]);
 
   const saveChanges = async () => {
-    if (isCOPOChanged) {
+    if (isCOPOChanged || isIndirectChanged) {
       try {
-        console.log("Saving")
+        console.log("Saving");
         await dispatch(updateCOPO()).unwrap();
         toast.success("Saved changes!");
         setCOPOChanged(false);
@@ -95,17 +99,15 @@ export function SubjectInfo() {
             subjects.find((s) => s._id === id)?.name ||
             "Loading..."}
         </h1>
-          {
-            console.log(coPos.finde,
-            Object.keys(coPos).length === 0)
-          }
+        
         <button
           onClick={saveChanges}
           disabled={
-            classId == null ||
+            (classId == null ||
             classId === undefined ||
             coPos.finder ||
-            Object.keys(coPos).length === 0
+            Object.keys(coPos).length === 0) &&
+            Object.keys(indirect).length === 0
           }
           className="ml-auto bg-green-600 hover:bg-green-700 text-white px-4 h-10 rounded-lg shadow-sm disabled:opacity-50"
         >
@@ -124,6 +126,7 @@ export function SubjectInfo() {
             { key: "experiments", label: "TW COs" },
             { key: "endsem", label: "University Exams" },
             { key: "mapping", label: "COs Attainment" },
+            { key: "indirect", label: "Indirect Attainment" },
           ].map((t) => (
             <button
               key={t.key}
@@ -146,29 +149,41 @@ export function SubjectInfo() {
             <div className="p-10 text-center text-gray-500">
               No students available.
             </div>
-          ) : loadingStudents ? 
-            <IoPeopleSharp size={30} color="gray" className="m-auto floatingUpDown" />
-          : (
+          ) : loadingStudents ? (
+            <IoPeopleSharp
+              size={30}
+              color="gray"
+              className="m-auto floatingUpDown"
+            />
+          ) : (
             <StudentList
               students={students}
               class={id}
-              twCount = {0 || currentSubject?.co?.tws}
+              twCount={0 || currentSubject?.co?.tws}
               deleteStudent={removeStudent}
               setChange={setMarksChanged}
             />
           ))}
 
-        {activeTab === "co" && <AssessmentSetup setChange = {setCOPOChanged} subjectId={id} />}
+        {activeTab === "co" && (
+          <AssessmentSetup setChange={setCOPOChanged} subjectId={id} />
+        )}
 
         {activeTab === "experiments" && (
-          <TermWorkManagement setChange = {setCOPOChanged} subjectId={id} termWorks={currentSubject?.co} />
+          <TermWorkManagement
+            setChange={setCOPOChanged}
+            subjectId={id}
+            termWorks={currentSubject?.co}
+          />
         )}
 
-        {activeTab === "endsem" && (
-          <UniversityCOs />
-        )}
+        {activeTab === "endsem" && <UniversityCOs />}
 
         {activeTab === "mapping" && <CO_PO_Mapping subjectId={id} />}
+
+        {activeTab === "indirect" && (
+          <IndirectSetup setChange = {setIndirectChanged} classId={id} />
+        )}
       </div>
     </div>
   );

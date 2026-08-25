@@ -8,7 +8,7 @@ export const uploadExcel = createAsyncThunk(
   async ({file, classId}, { rejectWithValue, getState }) => {
     try {
       const state = getState();
-      console.log(state.subjects?.subjects.find(s => s._id === classId))
+      
       const selectedSubject = state.subjects?.subjects.find(s => s._id === classId);
       if (!file) return rejectWithValue("No file selected");
       let id = JSON.stringify({

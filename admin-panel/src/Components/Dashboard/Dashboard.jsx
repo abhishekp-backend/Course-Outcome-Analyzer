@@ -14,21 +14,24 @@ export default function Dashboard() {
   const { length: noOfFaculties } = useSelector((state) => state.faculty);
   const { length: noOfClasses } = useSelector((state) => state.class);
   const { length: noOfAcademicYears } = useSelector((state) => state.academicYear);
+  const { length: noOfBranches} = useSelector(state => state.branch);
   const { length: noOfSubjects } = useSelector((state) => state.subjects);
+  const { user } = useSelector(state => state.auth);
 
   const cards = {
+    "Branches / HODs": noOfBranches,
     Faculties: noOfFaculties,
+    Subjects: noOfSubjects,
     Classes: noOfClasses,
     AcademicYear: noOfAcademicYears,
-    Subjects: noOfSubjects,
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex">
       <main className="flex-1 p-6 bg-gray-50">
         <h1 className="text-3xl font-bold text-red-600 mb-6">Dashboard</h1>
 
-        <div className="analytics grid grid-cols-4 gap-4">
+        <div className="analytics grid grid-cols-4 gap-4 select-none">
           {Object.entries(cards).map((e) => {
             return <Card title={e[0]} counts={e[1]} />;
           })}

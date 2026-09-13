@@ -6,19 +6,23 @@ import { fetchAcademicSubjects } from "../../store/slices/subjectsSlice";
 import { fetchBranches } from "../../store/slices/branchSlice";
 import { fetchClasses } from "../../store/slices/classSlice";
 import { fetchFaculty } from "../../store/slices/facultySlice";
+import { logoutUser } from "../../store/slices/authSlice";
 
 export default function Sidebar({ active }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { years, academicId } = useSelector((state) => state.academicYear);
+  const { user } = useSelector((state) => state.auth);
+
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Subjects", path: "/dashboard/subjects" },
-    { name: "Faculty", path: "/dashboard/faculty" },
-    { name: "Students", path: "/dashboard/students" },
-    { name: "Academic Years", path: "/dashboard/academic-years" },
-    { name: "Branches", path: "/dashboard/branches" },
     { name: "Sections", path: "/dashboard/classes" },
+    { name: "Faculty", path: "/dashboard/faculty" },
+    { name: "Subjects", path: "/dashboard/subjects" },
+    { name: "Students", path: "/dashboard/students" },
+    { name: "Branches", path: "/dashboard/branches" },
+    { name: "Academic Years", path: "/dashboard/academic-years" },
+    // { name: "Head of Departments", path: "/dashboard/hods" },
   ];
 
   useEffect(() => {
@@ -32,27 +36,31 @@ export default function Sidebar({ active }) {
   }, [dispatch, academicId]);
 
   return (
-    <aside className="w-64 bg-white text-gray-800 flex flex-col min-h-screen shadow-md">
-      <h1 className="text-2xl font-bold p-6 border-b border-gray-200 m-auto">
-        Admin Panel
+    <aside className="w-64 stick bg-white text-gray-800 flex flex-col h-screen shadow-md">
+      <h1 className="text-2xl font-bold px-6 py-5 border-b border-gray-200 text-center">
+        {!user.role ? "Admin" : user?.role} Panel
       </h1>
-      <select className="w-[80%] border rounded-sm m-auto p-1 ">
-        {Array.from(years).map((e) => {
-          return (
-            <option key={e.year} value={e.year}>
-              {e.label}
-            </option>
-          );
-        })}
-      </select>
-      <nav className="flex-1 p-4 space-y-2">
+
+      <div className="px-6 py-4">
+        <select className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+          {Array.from(years).map((e) => {
+            return (
+              <option key={e.year} value={e.year}>
+                {e.label}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+
+      <nav className="flex-1 px-4 py-2 space-y-2">
         {menuItems.map((item) => (
           <button
             key={item.name}
-            className={`w-full cursor-pointer text-left px-4 py-2 rounded transition ${
+            className={`w-full cursor-pointer text-left px-4 py-2.5 rounded-md transition ${
               active === item.path || active === item.path + "/"
-                ? "bg-red-600/80 text-white"
-                : "hover:bg-red-200 text-gray-800"
+                ? "bg-red-600 text-white shadow-sm"
+                : "text-gray-700 hover:bg-red-50 hover:text-red-600"
             }`}
             onClick={() => navigate(item.path)}
           >
@@ -60,6 +68,15 @@ export default function Sidebar({ active }) {
           </button>
         ))}
       </nav>
+
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={()=>dispatch(logoutUser())}
+          className="w-full cursor-pointer outline-none px-4 py-2.5 rounded-md text-left font-medium text-red-600 border border-red-200 hover:bg-red-50 hover:border-red-300 transition duration-200"
+        >
+          Log Out
+        </button>
+      </div>
     </aside>
   );
 }

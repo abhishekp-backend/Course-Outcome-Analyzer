@@ -6,7 +6,7 @@ export default function DashboardLayout() {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen">
       <Sidebar active={location.pathname} />
       <main className="flex-1 p-6 bg-gray-50">
         <Outlet />

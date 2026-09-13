@@ -270,19 +270,18 @@ exports.getAllSubjects = async (req, res) => {
 
 exports.getAcademicSubjects = async (req, res) => {
   try {
-    const pipeline = [
-      {
-        $match: {
-          academicYear: new mongoose.Types.ObjectId(req.params.academicYearId),
-        },
-      },
-    ];
+    let matchQuery = {
+      academicYear: new mongoose.Types.ObjectId(req.params.academicYearId),
+    };
 
-    if (req.params.branch) {
-      pipeline[0].$match.branch = new mongoose.Types.ObjectId(req.query.branch);
+    if (req.user.branchId && req.user.branchId !== "all") {
+      matchQuery.branch = new mongoose.Types.ObjectId(req.user.branchId);
     }
 
-    pipeline.push(
+    const pipeline = [
+      {
+        $match: matchQuery,
+      },
       {
         $lookup: {
           from: "academicyears", // must match Mongo collection name
@@ -312,7 +311,7 @@ exports.getAcademicSubjects = async (req, res) => {
           division: "$division.division",
         },
       },
-    );
+    ];
 
     const subjects = await Subject.aggregate(pipeline);
 

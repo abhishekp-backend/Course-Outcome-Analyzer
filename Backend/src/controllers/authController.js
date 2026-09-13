@@ -97,7 +97,7 @@ const login = asyncHandler(async (req, res) => {
     user.lastLogin = new Date();
     await user.save();
     // Generate token
-    const token = generateToken(user._id, user.username, role);
+    const token = generateToken(user._id, user.username, role, branchId);
   
     res.cookie("auth_token", token, {
       httpOnly: true,
@@ -113,7 +113,7 @@ const login = asyncHandler(async (req, res) => {
   }
   else if (role === "ADMIN-Manager") {
     if (email === "admin@bvdu.com" || password === "AdminManager") {
-      res.cookie("auth_token", generateToken(role, email, role), {
+      res.cookie("auth_token", generateToken(role, email, role, "all"), {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
@@ -154,7 +154,7 @@ const login = asyncHandler(async (req, res) => {
     await hodUser.save();
 
     // Generate token
-    const token = generateToken(hodUser._id, hodUser.username, role);
+    const token = generateToken(hodUser._id, hodUser.username, role, hodUser.branchId);
 
     res.cookie("auth_token", token, {
       httpOnly: true,

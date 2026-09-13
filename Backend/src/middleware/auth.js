@@ -114,6 +114,8 @@ const authenticateToken = async (req, res, next) => {
         role: "FACULTY",
       };
 
+      console.log(req.user);
+
       return next();
     }
 
@@ -161,12 +163,19 @@ const authenticateToken = async (req, res, next) => {
 // ==========================================
 // GENERATE TOKEN
 // ==========================================
-const generateToken = (userId, username, role) => {
+const generateToken = (userId, username, role, branchId) => {
+  console.log("At login:", {
+      userId,
+      username,
+      role,
+      branchId,
+    });
   return jwt.sign(
     {
       userId,
       username,
       role,
+      branchId,
     },
     JWT_SECRET,
     {

@@ -20,6 +20,7 @@ export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (thunkAPI) => {
     try {
+      console.log("Logging out")
       await api.post("/api/auth/logout");
       return true;
     } catch (error) {
@@ -32,8 +33,8 @@ export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
   async (thunkAPI) => {
     try {
-      await api.get("/api/auth/profile");
-      return true;
+      const res = await api.get("/api/auth/profile");
+      return res.data?.user;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data.errors[0].message);
     }
@@ -80,9 +81,10 @@ const authSlice = createSlice({
         state.authVerified = false;
         state.isAuthenticated = false;
       })
-      .addCase(checkAuth.fulfilled, (state) => {
+      .addCase(checkAuth.fulfilled, (state, action) => {
         state.authVerified = true;
         state.isAuthenticated = true;
+        state.user = action.payload;
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.authVerified = true;

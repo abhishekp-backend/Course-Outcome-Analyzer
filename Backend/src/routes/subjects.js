@@ -1,5 +1,11 @@
 const express = require('express');
+
 const { authenticateToken } = require('../middleware/auth');
+
+const {
+  authorizeSubject,
+} = require('../middleware/authorization/subjectAuthorization');
+
 const subjectController = require('../controllers/subjectController');
 
 const router = express.Router();
@@ -11,18 +17,33 @@ router.use(authenticateToken);
 router.get('/', subjectController.getUserSubjects);
 
 // Get subject information
-router.get('/subjectInfo/:id', subjectController.getSubject);
+router.get(
+  '/subjectInfo/:id',
+  authorizeSubject,
+  subjectController.getSubject
+);
 
 // Get yearly subject for admin
-router.get('/academic-year/:academicYearId', subjectController.getAcademicSubjects);
+router.get(
+  '/academic-year/:academicYearId',
+  subjectController.getAcademicSubjects
+);
 
 // Create a new subject
 router.post('/', subjectController.createSubject);
 
 // Update a subject
-router.put('/:id', subjectController.updateSubject);
+router.put(
+  '/:id',
+  authorizeSubject,
+  subjectController.updateSubject
+);
 
 // Delete a subject
-router.delete('/:id', subjectController.deleteSubject);
+router.delete(
+  '/:id',
+  authorizeSubject,
+  subjectController.deleteSubject
+);
 
 module.exports = router;

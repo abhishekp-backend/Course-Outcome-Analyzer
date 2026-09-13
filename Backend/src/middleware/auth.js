@@ -1,71 +1,181 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const HodUser = require("../models/HodUser");
 
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// ==========================================
+// AUTHENTICATE TOKEN
+// ==========================================
 const authenticateToken = async (req, res, next) => {
   try {
-    const token = req.cookies.auth_token;
+    // Get JWT from HTTP-only cookie
+    const token = req.cookies?.auth_token;
 
     if (!token) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: 'Access token required' 
+        message: "Access token required",
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    // Verify JWT
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // ==========================================
+    // ADMIN MANAGER
+    // ==========================================
     if (decoded.role === "ADMIN-Manager") {
+      /*
+       * Admin currently uses a fixed admin account.
+       *
+       * Since generateToken() stores the username,
+       * we verify that username here.
+       */
       if (decoded.username !== "admin@bvdu.com") {
-        return res.status(500).json({
+        return res.status(401).json({
           success: false,
-          message: 'Authentication error'
+          message: "Invalid admin credentials",
         });
       }
-      req.user = {_id:decoded.userId, username: decoded.username, email: decoded.email}
-    }
-    else if (decoded.role === "FACULTY") {
-      // Check if user still exists and is active
-      const user = await User.findById(decoded.userId).select('-password');
-      if (!user || !user.isActive) {
-        return res.status(401).json({ 
-          success: false,
-          message: 'User not found or inactive' 
-        });
-      }
-      req.user = user;
+
+      req.user = {
+        _id: decoded.userId,
+        username: decoded.username,
+        role: "ADMIN-Manager",
+      };
+
+      return next();
     }
 
-    next();
-  } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(403).json({ 
-        success: false,
-        message: 'Invalid token' 
-      });
+    // ==========================================
+    // HOD
+    // ==========================================
+    if (decoded.role === "HOD") {
+      /*
+       * decoded.userId contains hodUser._id.
+       *
+       * Therefore we MUST search using findById(),
+       * NOT:
+       *
+       * HodUser.findOne({ email: decoded.userId })
+       */
+      const hodUser = await HodUser.findById(decoded.userId)
+        .select("-password");
+
+      if (!hodUser) {
+        return res.status(401).json({
+          success: false,
+          message: "HOD not found",
+        });
+      }
+
+      if (!hodUser.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "HOD account is inactive",
+        });
+      }
+
+      req.user = {
+        ...hodUser.toObject(),
+        role: "HOD",
+      };
+
+      return next();
     }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(403).json({ 
-        success: false,
-        message: 'Token expired' 
-      });
+
+    // ==========================================
+    // FACULTY
+    // ==========================================
+    if (decoded.role === "FACULTY") {
+      /*
+       * decoded.userId contains User._id.
+       */
+      const facultyUser = await User.findById(decoded.userId)
+        .select("-password");
+
+      if (!facultyUser) {
+        return res.status(401).json({
+          success: false,
+          message: "Faculty user not found",
+        });
+      }
+
+      if (!facultyUser.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "Faculty account is inactive",
+        });
+      }
+
+      req.user = {
+        ...facultyUser.toObject(),
+        role: "FACULTY",
+      };
+
+      return next();
     }
-    
-    console.error('Auth middleware error:', error);
-    return res.status(500).json({ 
+
+    // ==========================================
+    // INVALID / UNKNOWN ROLE
+    // ==========================================
+    return res.status(403).json({
       success: false,
-      message: 'Authentication error' 
+      message: "Invalid user role",
+    });
+
+  } catch (error) {
+    // ==========================================
+    // TOKEN EXPIRED
+    // ==========================================
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired",
+      });
+    }
+
+    // ==========================================
+    // INVALID TOKEN
+    // ==========================================
+    if (error.name === "JsonWebTokenError") {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
+
+    // ==========================================
+    // OTHER ERRORS
+    // ==========================================
+    console.error("Auth middleware error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Authentication error",
     });
   }
 };
 
+// ==========================================
+// GENERATE TOKEN
+// ==========================================
 const generateToken = (userId, username, role) => {
   return jwt.sign(
-    { userId, username, role },
-    process.env.JWT_SECRET || 'your-secret-key',
-    { expiresIn: '24h' }
+    {
+      userId,
+      username,
+      role,
+    },
+    JWT_SECRET,
+    {
+      expiresIn: "24h",
+    }
   );
 };
 
 module.exports = {
   authenticateToken,
-  generateToken
-}; 
+  generateToken,
+};

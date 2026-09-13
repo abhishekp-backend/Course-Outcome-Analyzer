@@ -18,7 +18,9 @@ export default function ManageBranches() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    faculty: ""
+    email: "",
+    password: "",
+    username: "",
   });
 
   /* ===================== EFFECT ===================== */
@@ -92,6 +94,36 @@ export default function ManageBranches() {
             })
           }
         </select> */}
+
+        <input
+          type="text"
+          placeholder="HOD Username"
+          value={form.username}
+          onChange={(e) =>
+            setForm({ ...form, username: e.target.value })
+          }
+          className="w-full p-2 border rounded mb-2"
+        />
+
+        <input
+          type="email"
+          placeholder="HOD Email"
+          value={form.email}
+          onChange={(e) =>
+            setForm({ ...form, email: e.target.value })
+          }
+          className="w-full p-2 border rounded mb-2"
+        />
+        
+        <input
+          type="password"
+          placeholder="HOD Password"
+          value={form.password}
+          onChange={(e) =>
+            setForm({ ...form, password: e.target.value })
+          }
+          className="w-full p-2 border rounded mb-2"
+        />
 
         <button
           type="submit"

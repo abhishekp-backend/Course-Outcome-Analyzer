@@ -1,40 +1,44 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { api } from "../reqURL"
+import { api } from "../reqURL";
 
-const API_BASE_URL = import.meta.env.VITE_API
+const API_BASE_URL = import.meta.env.VITE_API;
 
 // Login user
-export const loginUser = createAsyncThunk("auth/loginUser", async (credentials, thunkAPI) => {
-  try {
-    await api.post("/api/auth/login", {
-      ...credentials,
-      role: "ADMIN-Manager"
-    })
-    return true;
-  } catch (err) {
-    return thunkAPI.rejectWithValue(err.response.data.errors[0].message);
-  }
-});
+export const loginUser = createAsyncThunk(
+  "auth/loginUser",
+  async (credentials, thunkAPI) => {
+    try {
+      await api.post("/api/auth/login", credentials);
+      return true;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data.errors[0].message);
+    }
+  },
+);
 
-export const logoutUser = createAsyncThunk("auth/logoutUser", async (thunkAPI) => {
-  try {
-    await api.post("/api/auth/logout")
-    return true;
-  }
-  catch(error) {
-    return thunkAPI.rejectWithValue(error.response.data.errors[0].message)
-  }
-})
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (thunkAPI) => {
+    try {
+      await api.post("/api/auth/logout");
+      return true;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data.errors[0].message);
+    }
+  },
+);
 
-export const checkAuth = createAsyncThunk("auth/checkAuth", async(thunkAPI) => {
-  try {
-    await api.get("/api/auth/profile")
-    return true;
-  }
-  catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.errors[0].message)
-  }
-})
+export const checkAuth = createAsyncThunk(
+  "auth/checkAuth",
+  async (thunkAPI) => {
+    try {
+      await api.get("/api/auth/profile");
+      return true;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data.errors[0].message);
+    }
+  },
+);
 
 const initialState = {
   user: null,
@@ -66,25 +70,25 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.loading = false
+        state.loading = false;
       })
       .addCase(logoutUser.rejected, (state, action) => {
-        state.error = action.payload
-        state.loading = false
+        state.error = action.payload;
+        state.loading = false;
       })
       .addCase(checkAuth.pending, (state) => {
-        state.authVerified = false
-        state.isAuthenticated = false
+        state.authVerified = false;
+        state.isAuthenticated = false;
       })
       .addCase(checkAuth.fulfilled, (state) => {
-        state.authVerified = true
-        state.isAuthenticated = true
+        state.authVerified = true;
+        state.isAuthenticated = true;
       })
       .addCase(checkAuth.rejected, (state, action) => {
-        state.authVerified = true
-        state.error = action.payload
-        state.isAuthenticated = false
-      })
+        state.authVerified = true;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      });
   },
 });
 

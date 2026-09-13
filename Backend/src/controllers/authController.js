@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const { generateToken } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
+const HodUser = require('../models/HodUser');
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -65,6 +66,7 @@ const register = asyncHandler(async (req, res) => {
 // @access  Public
 const login = asyncHandler(async (req, res) => {
   const { email, password, role } = req.body;
+  console.log(password);
   if (role === "FACULTY") {
     // Find user by email
     const user = await User.findByEmail(email);
@@ -79,7 +81,7 @@ const login = asyncHandler(async (req, res) => {
     if (!user.isActive) {
       return res.status(400).json({
         success: false,
-        message: 'Account is deactivated'
+        message: 'Account is inactive'
       });
     }
     
@@ -91,7 +93,7 @@ const login = asyncHandler(async (req, res) => {
         message: 'Invalid credentials'
       });
     }
-    // Update last login
+    // Update last login session for Admin
     user.lastLogin = new Date();
     await user.save();
     // Generate token
@@ -101,8 +103,9 @@ const login = asyncHandler(async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60*60*1000
-    })
+      maxAge: 60 * 60 * 1000 * 10
+    });
+
     return res.json({
       name: user.username,
       success: true
@@ -119,6 +122,51 @@ const login = asyncHandler(async (req, res) => {
       return res.status(200).json({sucess: true})
     }
     return res.status(401).json({sucess: false});
+  }
+  else if (role === "HOD") {
+    const hodUser = await HodUser.findByEmail(email);
+    console.log(hodUser);
+    if (!hodUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
+
+    // Check if HOD's user is active
+    if (!hodUser.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: 'Account is inactive'
+      });
+    }
+
+    const isValidPassHOD = await hodUser.comparePassword(password);
+    if (!isValidPassHOD) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
+
+    // Update last login session for HOD
+    hodUser.lastLogin = new Date();
+    await hodUser.save();
+
+    // Generate token
+    const token = generateToken(hodUser._id, hodUser.username, role);
+
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000 * 10,
+    });
+
+    return res.json({
+      name: hodUser.username,
+      success: true,
+    })
   }
 
 });

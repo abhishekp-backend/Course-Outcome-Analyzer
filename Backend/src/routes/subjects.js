@@ -11,10 +11,10 @@ router.use(authenticateToken);
 router.get('/', subjectController.getUserSubjects);
 
 // Get subject information
-router.get('/subjectInfo/:id', subjectController.getSubject)
+router.get('/subjectInfo/:id', subjectController.getSubject);
 
 // Get yearly subject for admin
-router.get('/academic-year/:academicYearId', subjectController.getAcademicSubjects)
+router.get('/academic-year/:academicYearId', subjectController.getAcademicSubjects);
 
 // Create a new subject
 router.post('/', subjectController.createSubject);

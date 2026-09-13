@@ -25,12 +25,15 @@ export const fetchBranches = createAsyncThunk(
 
 export const createBranch = createAsyncThunk(
   'branch/createBranch',
-  async ({ name }, { rejectWithValue, dispatch, getState }) => {
+  async ({ name, email, password, username }, { rejectWithValue, dispatch, getState }) => {
     try {
       const state = getState();
       const res = await api.post('/api/branch/createBranch', {
         name,
-        academicYear: state.academicYear.academicId
+        academicYear: state.academicYear.academicId,
+        hodEmail: email,
+        hodPassword: password,
+        hodUsername: username,
       });
       dispatch(fetchBranches({ filter: {} }));
       return res.data;

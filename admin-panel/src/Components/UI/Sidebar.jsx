@@ -14,15 +14,13 @@ export default function Sidebar({ active }) {
   const { years, academicId } = useSelector((state) => state.academicYear);
   const { user } = useSelector((state) => state.auth);
 
-  console.log(user.role !== "admin" ? "hidden" : "");
-
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Sections", path: "/dashboard/classes" },
     { name: "Faculty", path: "/dashboard/faculty" },
     { name: "Subjects", path: "/dashboard/subjects" },
     { name: "Students", path: "/dashboard/students" },
-    { name: "Branches", path: "/dashboard/branches", style: `${user.role !== "admin" ? "hidden": ""}` },
+    { name: "Branches", path: "/dashboard/branches", style: `${user.role !== "ADMIN-Manager" ? "hidden": "block"}` },
     { name: "Academic Years", path: "/dashboard/academic-years" },
     // { name: "Head of Departments", path: "/dashboard/hods" },
   ];
@@ -39,9 +37,12 @@ export default function Sidebar({ active }) {
 
   return (
     <aside className="w-64 stick bg-white text-gray-800 flex flex-col h-screen shadow-md">
-      <h1 className="text-2xl font-bold px-6 py-5 border-b border-gray-200 text-center">
-        {!user.role ? "Admin" : user?.role} Panel
+      <h1 className="text-2xl font-bold px-6 pt-5 text-center">
+        {user.name || "Admin"}
       </h1>
+      <h2 className="text-sm px-6 py-3 border-b border-gray-200 text-center">
+        {user?.role === "ADMIN-Manager" ? "Admin" : user?.role} Panel
+      </h2>
 
       <div className="px-6 py-4">
         <select className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">

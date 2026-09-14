@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchClasses, createClass } from "../../store/slices/classSlice";
 import { fetchFaculty } from "../../store/slices/facultySlice.js";
 import { fetchAcademicSubjects } from "../../store/slices/subjectsSlice";
+import toast from "react-hot-toast";
 
 import AddButton from "../UI/AddButton";
 import DataTable from "../UI/DataTable";
@@ -43,20 +44,26 @@ export default function ManageClasses() {
 
   /* ===================== SUBMIT ===================== */
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isFormValid) return;
-    console.log("Creating")
-    dispatch(createClass(form));
-    setModalOpen(false);
-    setForm({
-      academicYearId: "",
-      subjectId: "",
-      division: "",
-      facultyId: "",
-      semester: null,
-      branch: "",
-    });
-    console.log("Created")
+
+    try {
+      await dispatch(createClass(form)).unwrap();
+
+      toast.success("Class created successfully");
+
+      setModalOpen(false);
+      setForm({
+        academicYearId: "",
+        subjectId: "",
+        division: "",
+        facultyId: "",
+        semester: null,
+        branch: "",
+      });
+    } catch (error) {
+      toast.error(error?.msg || "Failed to create class");
+    }
   };
 
   /* ===================== TABLE ===================== */
@@ -74,6 +81,15 @@ export default function ManageClasses() {
     : [];
 
   const DIVISIONS = ["A", "B", "C", "D"];
+
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      branch: branches.length === 1 ? branches[0]._id : prev.branch,
+      subjectId: subjects.length === 1 ? subjects[0]._id : prev.subjectId,
+      facultyId: faculties.length === 1 ? faculties[0]._id : prev.facultyId,
+    }));
+  }, [branches, subjects, faculties]);
 
   /* ===================== RENDER ===================== */
 
@@ -109,7 +125,7 @@ export default function ManageClasses() {
           ))}
         </select>
 
-                <select
+        <select
           value={form.branch}
           onChange={(e) => setForm({ ...form, branch: e.target.value })}
           className="w-full p-2 border rounded mb-2"

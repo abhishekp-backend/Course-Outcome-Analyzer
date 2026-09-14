@@ -14,6 +14,11 @@ const classSchema = new mongoose.Schema(
       ref: "Subject",
       required: true
     },
+    branch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch",
+      required: true,
+    },
     division: {
       type: String,
       required: true,

@@ -28,7 +28,7 @@ export const createClass = createAsyncThunk(
   async ({ subjectId, division, facultyId, semester, branch }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
-      state.creatingClass = true;
+      
       const res = await api.post("/api/class/createClass", {
         academicYearId: state.academicYear.academicId,
         subjectId,
@@ -37,7 +37,7 @@ export const createClass = createAsyncThunk(
         semester: semester,
         branchId: branch,
       });
-      state.creatingClass = false;
+      
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || "Failed to create class");
@@ -86,17 +86,19 @@ const classSlice = createSlice({
       /* ---------- CREATE ---------- */
       .addCase(createClass.pending, (state) => {
         state.loading = true;
+        state.creatingClass = true;
         state.fetched = false; 
       })
       .addCase(createClass.fulfilled, (state, action) => {
         state.fetched = true;
+        state.creatingClass = false;
         state.loading = false;
         state.classes.push(action.payload.data);
       })
       .addCase(createClass.rejected, (state, action) => {
         state.fetched = false;
         state.loading = false;
-        state.error.create = action.payload;
+        state.error = action.payload;
       });
   }
 });

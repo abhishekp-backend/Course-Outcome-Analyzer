@@ -1,108 +1,145 @@
 const Class = require("../models/class");
+const mongoose = require("mongoose");
 
 exports.getAllClasses = async (req, res) => {
   try {
+    let matchQuery = {};
+
+    console.log("USER:", req.user);
+
+    if (req.user.branchId && req.user.branchId !== "all") {
+      matchQuery.branch = new mongoose.Types.ObjectId(req.user.branchId);
+    }
+
+    console.log("\nMatch Query:\n", matchQuery);
+
     const classes = await Class.aggregate([
+      {
+        $match: matchQuery,
+      },
+
       // lookup academicYear
       {
         $lookup: {
-          from: "academicyears",        // MongoDB collection name (lowercase + plural usually)
+          from: "academicyears",
           localField: "academicYear",
           foreignField: "_id",
-          as: "academicYear"
-        }
+          as: "academicYear",
+        },
       },
-      { $unwind: "$academicYear" },    // flatten array
-      
+      { $unwind: "$academicYear" },
+
       // lookup Faculty
       {
         $lookup: {
-          from: "users",        // MongoDB collection name (lowercase + plural usually)
+          from: "users",
           localField: "faculty",
           foreignField: "_id",
-          as: "faculty"
-        }
+          as: "faculty",
+        },
       },
-      { $unwind: "$faculty" },    // flatten array
-      
+      { $unwind: "$faculty" },
+
       // lookup subjects
       {
         $lookup: {
-          from: "subjects",             // MongoDB collection name
+          from: "subjects",
           localField: "subject",
           foreignField: "_id",
-          as: "subject"
-        }
+          as: "subject",
+        },
       },
-      { $unwind: "$subject" },          // flatten array
-      
+      { $unwind: "$subject" },
+
       // lookup branches
       {
         $lookup: {
-          from: "branches",        // MongoDB collection name (lowercase + plural usually)
-          localField: "subject.branch",
+          from: "branches",
+          localField: "branch",
           foreignField: "_id",
           as: "branch",
-        }
+        },
       },
-      { $unwind: "$branch" },    // flatten array
+      { $unwind: "$branch" },
 
-      // optional: project only fields you need
       {
         $project: {
           _id: 1,
           division: 1,
-          "semester": "$subject.semester",
-          "academicYear": "$academicYear.label",      // adjust field names as per your schema
-          "subject": "$subject.name",
-          "faculty": "$faculty.username",
-          "branch": "$branch.branchName",
-        }
+          semester: "$subject.semester",
+          academicYear: "$academicYear.label",
+          subject: "$subject.name",
+          faculty: "$faculty.username",
+          branch: "$branch.branchName",
+        },
       },
 
-      { $sort: { createdAt: -1 } }    // latest first
+      { $sort: { createdAt: -1 } },
     ]);
 
-    return res.status(200).json({ success: true, data: classes });
+    return res.status(200).json({
+      success: true,
+      data: classes,
+    });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({ error: err.message });
   }
 };
 
 exports.createClass = async (req, res) => {
   try {
-    const { academicYearId, classId, division, facultyId, semester, subjectId, branchId } = req.body;
+    const {
+      academicYearId,
+      division,
+      facultyId,
+      semester,
+      subjectId,
+      branchId,
+    } = req.body;
 
-    if (!academicYearId || !subjectId || !division || !facultyId || !semester || !branchId) {
+    if (
+      !academicYearId ||
+      !subjectId ||
+      !division ||
+      !facultyId ||
+      !semester ||
+      !branchId
+    ) {
       return res.status(400).json({ msg: "Invalid values!" });
     }
 
     const exists = await Class.findOne({
       academicYear: academicYearId,
-      classId: classId,
       division: division.toUpperCase(),
       faculty: facultyId,
-      semester: semester,
+      semester,
       subject: subjectId,
-      branch: branchId
+      branch: branchId,
     });
 
     if (exists) {
-      return res.status(409).json({ msg: "Class / Section already exists" });
+      return res.status(409).json({
+        msg: "Class / Section already exists",
+      });
     }
 
     const newClass = await Class.create({
       academicYear: academicYearId,
-      classId: classId,
       division: division.toUpperCase(),
       faculty: facultyId,
-      semester: semester,
+      semester,
       subject: subjectId,
+      branch: branchId,
     });
 
-    return res.status(201).json({ success: true, data: newClass });
+    return res.status(201).json({
+      success: true,
+      data: newClass,
+    });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      error: err.message,
+    });
   }
 };
-

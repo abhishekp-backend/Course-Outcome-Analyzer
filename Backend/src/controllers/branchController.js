@@ -1,12 +1,12 @@
 const Branch = require("../models/Branch");
 const mongoose = require("mongoose");
-const User = require("../models/User");
 const HodUser = require("../models/HodUser");
 
 function generateH_ID() {
   const now = new Date();
 
-  const timestamp = '' +
+  const timestamp =
+    "" +
     now.getFullYear() +
     (now.getMonth() + 101).toString().slice(1) +
     (now.getDate() + 100).toString().slice(1) +
@@ -14,25 +14,32 @@ function generateH_ID() {
     (now.getMinutes() + 100).toString().slice(1) +
     (now.getSeconds() + 100).toString().slice(1);
 
-  const random = Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase();
-  const randomHex = '000000'.substring(random.length) + random;
+  const random = Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .toUpperCase();
+  const randomHex = "000000".substring(random.length) + random;
 
-  return 'H-' + timestamp + '-' + randomHex;
+  return "H-" + timestamp + "-" + randomHex;
 }
 
 exports.getBranches = async (req, res) => {
   try {
-    const pipeline = [];
+    let matchQuery = {};
 
     if (req.query.academicYear) {
-      pipeline.push({
-        $match: {
-          academicYear: mongoose.Types.ObjectId(req.query.academicYear),
-        },
-      });
+      matchQuery.academicYear = new mongoose.Types.ObjectId(
+        req.query.academicYear,
+      );
     }
 
-    pipeline.push(
+    if (req?.user.branchId && req.user.branchId !== "all") {
+      matchQuery._id = new mongoose.Types.ObjectId(req.user.branchId);
+    }
+
+    const pipeline = [
+      {
+        $match: matchQuery,
+      },
       {
         $lookup: {
           from: "academicyears",
@@ -54,7 +61,7 @@ exports.getBranches = async (req, res) => {
           academicYearLabel: "$academicYear.label",
         },
       },
-    );
+    ];
 
     const branches = await Branch.aggregate(pipeline);
 
@@ -65,33 +72,38 @@ exports.getBranches = async (req, res) => {
 };
 
 exports.createBranch = async (req, res) => {
+  const { name, academicYear, hodEmail, hodPassword, hodUsername } = req.body;
+
+  if (!name || !academicYear) {
+    return res.status(400).json({
+      message: "Branch name and academicYear are required",
+    });
+  }
+
+  if (!hodEmail || !hodPassword) {
+    return res.status(400).json({
+      message: "HOD email or password not given.",
+    });
+  }
+
+  if (!hodUsername) {
+    return res.status(400).json({
+      message: "HOD username is required.",
+    });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(academicYear)) {
+    return res.status(400).json({
+      message: "Invalid academicYear",
+    });
+  }
+
+  const academicYearId = new mongoose.Types.ObjectId(academicYear);
+  const normalizedEmail = hodEmail.toLowerCase();
+
   const session = await mongoose.startSession();
 
   try {
-    const { name, academicYear, hodEmail, hodPassword, hodUsername } =
-      req.body;
-
-    if (!name || !academicYear) {
-      return res.status(400).json({
-        message: "Branch name and academicYear are required",
-      });
-    }
-
-    if (!hodEmail || !hodPassword) {
-      return res.status(400).json({
-        message: "HOD email or password not given.",
-      });
-    }
-
-    if (!hodUsername) {
-      return res.status(400).json({
-        message: "HOD username and fID are required.",
-      });
-    }
-
-    const academicYearId = new mongoose.Types.ObjectId(academicYear);
-
-    // Check if branch already exists for the same academic year
     const exists = await Branch.findOne({
       branchName: name,
       academicYear: academicYearId,
@@ -103,19 +115,21 @@ exports.createBranch = async (req, res) => {
       });
     }
 
-    // Check HOD email in HodUser collection
-    const hodExists = await HodUser.findOne({
-      email: hodEmail.toLowerCase(),
-    }).session(session);
+    const [hodExists, userExists] = await Promise.all([
+      HodUser.findOne({
+        email: normalizedEmail,
+      }).session(session),
+    ]);
 
-    if (hodExists) {
+    if (hodExists || userExists) {
       return res.status(409).json({
         message: "HOD email already exists in this college.",
       });
     }
 
+    let createdBranch;
+
     await session.withTransaction(async () => {
-      // 1. Create Branch
       const [branch] = await Branch.create(
         [
           {
@@ -126,12 +140,11 @@ exports.createBranch = async (req, res) => {
         { session },
       );
 
-      // 2. Create HOD user
       await HodUser.create(
         [
           {
             username: hodUsername,
-            email: hodEmail,
+            email: normalizedEmail,
             password: hodPassword,
             hodID: generateH_ID(),
             branchId: branch._id,
@@ -140,15 +153,16 @@ exports.createBranch = async (req, res) => {
         { session },
       );
 
-      // Make branch available outside transaction
-      req.createdBranch = branch;
+      createdBranch = branch;
     });
 
     return res.status(201).json({
       success: true,
-      branch: req.createdBranch,
+      branch: createdBranch,
     });
   } catch (err) {
+    console.log(err);
+
     return res.status(500).json({
       error: err.message,
     });

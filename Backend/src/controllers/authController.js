@@ -66,7 +66,7 @@ const register = asyncHandler(async (req, res) => {
 // @access  Public
 const login = asyncHandler(async (req, res) => {
   const { email, password, role } = req.body;
-  console.log(password);
+  
   if (role === "FACULTY") {
     // Find user by email
     const user = await User.findByEmail(email);
@@ -125,7 +125,7 @@ const login = asyncHandler(async (req, res) => {
   }
   else if (role === "HOD") {
     const hodUser = await HodUser.findByEmail(email);
-    console.log(hodUser);
+
     if (!hodUser) {
       return res.status(400).json({
         success: false,

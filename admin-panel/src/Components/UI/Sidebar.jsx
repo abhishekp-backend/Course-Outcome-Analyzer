@@ -14,13 +14,15 @@ export default function Sidebar({ active }) {
   const { years, academicId } = useSelector((state) => state.academicYear);
   const { user } = useSelector((state) => state.auth);
 
+  console.log(user.role !== "admin" ? "hidden" : "");
+
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Sections", path: "/dashboard/classes" },
     { name: "Faculty", path: "/dashboard/faculty" },
     { name: "Subjects", path: "/dashboard/subjects" },
     { name: "Students", path: "/dashboard/students" },
-    { name: "Branches", path: "/dashboard/branches" },
+    { name: "Branches", path: "/dashboard/branches", style: `${user.role !== "admin" ? "hidden": ""}` },
     { name: "Academic Years", path: "/dashboard/academic-years" },
     // { name: "Head of Departments", path: "/dashboard/hods" },
   ];
@@ -57,7 +59,7 @@ export default function Sidebar({ active }) {
         {menuItems.map((item) => (
           <button
             key={item.name}
-            className={`w-full cursor-pointer text-left px-4 py-2.5 rounded-md transition ${
+            className={`${item?.style} w-full cursor-pointer text-left px-4 py-2.5 rounded-md transition ${
               active === item.path || active === item.path + "/"
                 ? "bg-red-600 text-white shadow-sm"
                 : "text-gray-700 hover:bg-red-50 hover:text-red-600"

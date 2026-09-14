@@ -16,6 +16,7 @@ export default function Dashboard() {
   const { length: noOfAcademicYears } = useSelector((state) => state.academicYear);
   const { length: noOfBranches} = useSelector(state => state.branch);
   const { length: noOfSubjects } = useSelector((state) => state.subjects);
+  
   const { user } = useSelector(state => state.auth);
 
   const cards = {

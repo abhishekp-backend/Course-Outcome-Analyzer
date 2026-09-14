@@ -30,6 +30,7 @@ morgan.token('simple-message', (req, res) => {
   const path = req.originalUrl;
   const status = res.statusCode;
   const isSuccess = status >= 200 && status < 300;
+  console.log("Status: ", status);
   
   if (path.includes('/api/auth/register') && req.method === 'POST') {
     return isSuccess ? 'Account created successfully' : 'Account creation failed';

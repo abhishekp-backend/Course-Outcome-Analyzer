@@ -164,12 +164,6 @@ const authenticateToken = async (req, res, next) => {
 // GENERATE TOKEN
 // ==========================================
 const generateToken = (userId, username, role, branchId) => {
-  console.log("At login:", {
-      userId,
-      username,
-      role,
-      branchId,
-    });
   return jwt.sign(
     {
       userId,

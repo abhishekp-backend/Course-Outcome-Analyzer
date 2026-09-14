@@ -49,7 +49,7 @@ const register = asyncHandler(async (req, res) => {
   await user.save();
 
   // Generate token
-  const token = generateToken(user._id, user.username, "FACULTY");
+  const token = generateToken(user._id, user.username, "FACULTY", null);
 
   res.status(201).json({
     token,
@@ -179,7 +179,8 @@ const getProfile = asyncHandler(async (req, res) => {
     user: {
       id: req.user._id,
       name: req.user.username,
-      email: req.user.email
+      email: req.user.email,
+      role: req.user?.role,
     }
   });
 });

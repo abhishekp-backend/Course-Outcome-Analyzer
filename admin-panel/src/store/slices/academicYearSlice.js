@@ -1,45 +1,53 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { api } from '../reqURL';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { api } from "../reqURL";
 
 export const fetchAcademicYears = createAsyncThunk(
-  'academicYear/fetchAcademicYears',
+  "academicYear/fetchAcademicYears",
   async (_, { rejectWithValue, getState }) => {
     try {
       const currentState = getState().academicYear;
+
       if (currentState.fetched) {
         return currentState.years;
       }
-      const res = await api.post('/api/academic/getYears');
+      const res = await api.post("/api/academic/getYears");
       return res.data;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || 'Failed to fetch academic years'
+        err.response?.data || "Failed to fetch academic years",
       );
     }
-  }
+  },
+  {
+    condition: (_, { getState }) => {
+      const { loading, fetched } = getState().academicYear;
+
+      return !loading && !fetched;
+    },
+  },
 );
 
 export const createAcademicYear = createAsyncThunk(
-  'academicYear/createAcademicYear',
+  "academicYear/createAcademicYear",
   async (
     { year, label, startDate, endDate },
-    { rejectWithValue, dispatch }
+    { rejectWithValue, dispatch },
   ) => {
     try {
-      const res = await api.post('/api/academic/new', {
+      const res = await api.post("/api/academic/new", {
         year,
         label,
         startDate,
-        endDate
+        endDate,
       });
-      dispatch(fetchAcademicYears())
-      return res.data; // MUST return
+      dispatch(fetchAcademicYears());
+      return res.data.data; // MUST return
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || 'Failed to create new academic year'
+        err.response?.data || "Failed to create new academic year",
       );
     }
-  }
+  },
 );
 
 const initialState = {
@@ -49,31 +57,32 @@ const initialState = {
   loading: false,
   fetched: false,
   error: null,
-  academicId: ""
+  academicId: "",
 };
 
 const academicYearSlice = createSlice({
-  name: 'academicYear',
+  name: "academicYear",
   initialState,
   reducers: {
-    resetAcademicYearState: () => initialState
+    resetAcademicYearState: () => initialState,
   },
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     builder
       /* ---------- FETCH ---------- */
-      .addCase(fetchAcademicYears.pending, state => {
+      .addCase(fetchAcademicYears.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchAcademicYears.fulfilled, (state, action) => {
         state.fetched = true;
         state.years = action.payload.academicYears || state.years;
+
         const currentYear = new Date().getFullYear().toString();
         for (let i in action.payload.academicYears) {
-          let year = action.payload.academicYears[i].year
+          let year = action.payload.academicYears[i].year;
           if (year === currentYear) {
-            state.currentYear = year
-            state.academicId = action.payload.academicYears[i]._id
+            state.currentYear = year;
+            state.academicId = action.payload.academicYears[i]._id;
           }
         }
         state.length = state.years?.length || 0;
@@ -87,7 +96,7 @@ const academicYearSlice = createSlice({
       })
 
       /* ---------- CREATE ---------- */
-      .addCase(createAcademicYear.pending, state => {
+      .addCase(createAcademicYear.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -98,13 +107,14 @@ const academicYearSlice = createSlice({
         // If backend marks new year as active
         if (action.payload?.isActive) {
           state.currentYear = action.payload;
+          state.academicId = action.payload._id;
         }
       })
       .addCase(createAcademicYear.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { resetAcademicYearState } = academicYearSlice.actions;

@@ -20,9 +20,11 @@ exports.createNewAcademic = async (req, res) => {
         }
         const academicYearStatus = await academicYear.create({year: year.split("-")[0], label, startDate, endDate, isLocked: true});
         if (!academicYearStatus) {
-            return res.status(500).json({error:"Failed to create new academic year"})
+            return res.status(500).json({error:"Failed to create new academic year"});
         }
-        return res.status(200).json({success: true})
+        return res.status(200).json({success: true, data: {
+            year, label, startDate, endDate
+        }})
     }
     catch (err) {
         console.log("Academic year error: ", err);

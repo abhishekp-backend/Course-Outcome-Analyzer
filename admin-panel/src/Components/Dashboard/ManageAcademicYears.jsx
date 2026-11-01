@@ -38,12 +38,6 @@ export default function ManageAcademicYears() {
     return `${start}-${end}`;
   });
 
-  /* ===================== EFFECT ===================== */
-
-  useEffect(() => {
-    dispatch(fetchAcademicYears());
-  }, [dispatch]);
-
   /* ===================== HANDLERS ===================== */
 
   const handleYearChange = (year) => {
@@ -75,6 +69,7 @@ export default function ManageAcademicYears() {
       startDate: "",
       endDate: ""
     });
+    window.location.reload();
   };
 
   /* ===================== TABLE ===================== */

@@ -16,24 +16,35 @@ import { Toaster } from "react-hot-toast";
 
 function ProtectedRoute({ children }) {
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(checkAuth());
-  }, [dispatch]);
+
   const { isAuthenticated, authVerified } = useSelector((state) => state.auth);
-  return authVerified ? (
-    isAuthenticated ? (
-      children
-    ) : (
-      <Navigate to="/" />
-    )
-  ) : (
-    <div className="absolute left-[48%] top-[45%]">
-      <span className="font-bold text-gray-400">Loading...</span>
-    </div>
-  );
+
+  useEffect(() => {
+    if (!authVerified) {
+      dispatch(checkAuth());
+    }
+  }, [dispatch, authVerified]);
+
+  if (!authVerified) {
+    return (
+      <div className="absolute left-[48%] top-[45%]">
+        <span className="font-bold text-gray-400">Loading...</span>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 export default function App() {
+  const { academicId, loading: isLoadingAcademic } = useSelector(
+    (state) => state.academicYear,
+  );
+
   return (
     <>
       <BrowserRouter>
@@ -57,13 +68,35 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Dashboard />} />
-            <Route path="subjects" element={<ManageSubjects />} />
-            <Route path="faculty" element={<ManageFaculty />} />
-            <Route path="students" element={<ManageStudents />} />
-            <Route path="branches" element={<ManageBranches />} />
-            <Route path="classes" element={<ManageClasses />} />
-            <Route path="academic-years" element={<ManageAcademicYears />} />
+            {academicId && !isLoadingAcademic ? (
+              <>
+                <Route index element={<Dashboard />} />
+                <Route path="subjects" element={<ManageSubjects />} />
+                <Route path="faculty" element={<ManageFaculty />} />
+                <Route path="students" element={<ManageStudents />} />
+                <Route path="branches" element={<ManageBranches />} />
+                <Route path="classes" element={<ManageClasses />} />
+                <Route
+                  path="academic-years"
+                  element={<ManageAcademicYears />}
+                />
+              </>
+            ) : (
+              <>
+                <Route
+                  index
+                  element={<Navigate to="academic-years" replace />}
+                />
+                <Route
+                  path="academic-years"
+                  element={<ManageAcademicYears />}
+                />
+                <Route
+                  path="*"
+                  element={<Navigate to="academic-years" replace />}
+                />
+              </>
+            )}
           </Route>
         </Routes>
       </BrowserRouter>
